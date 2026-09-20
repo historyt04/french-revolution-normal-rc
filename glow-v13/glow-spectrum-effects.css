@@ -1,0 +1,92 @@
+/* Foreground spectra v1.2: opacity is local to each light surface. Normal
+   compositing keeps saturated facets and white pearl cores in front of art.
+   The original host still clips the outer artwork window below the frame. */
+.gc-window[data-effect="07"], .gc-window[data-effect="18"] { mix-blend-mode:normal; }
+.gc-window .grs-field { overflow:hidden; }
+.gc-window .grs-field [class^="grs-"] { transform-origin:center; transform-box:fill-box; }
+.gc-window .grs-foil-flow { animation:grs-foil-flow var(--grs-time,7s) ease-in-out infinite; }
+.gc-window .grs-foil-fold { animation:grs-foil-fold var(--grs-time,6s) ease-in-out infinite; }
+.gc-window .grs-foil-current { animation:grs-foil-current var(--grs-time,1.35s) linear infinite; }
+.gc-window .grs-foil-facet { animation:grs-foil-facet var(--grs-time,5.7s) ease-in-out infinite; }
+.gc-window .grs-spectrum-flare { animation:grs-spectrum-flare var(--grs-time,5.4s) ease-in-out infinite; }
+.gc-window .grs-foil-dust { animation:grs-foil-dust var(--grs-time,6s) ease-in-out infinite; }
+.gc-window .grs-pearl-bed { animation:grs-pearl-bed var(--grs-time,10s) ease-in-out infinite; }
+.gc-window .grs-pearl-lobe { animation:grs-pearl-lobe var(--grs-time,9s) ease-in-out infinite; }
+.gc-window .grs-pearl-lamella { animation:grs-pearl-lamella var(--grs-time,8s) ease-in-out infinite; }
+.gc-window .grs-pearl-core { animation:grs-pearl-core var(--grs-time,7s) ease-in-out infinite; }
+.gc-window .grs-pearl-ridge { animation:grs-pearl-ridge var(--grs-time,8s) ease-in-out infinite; }
+.gc-window .grs-pearl-current { animation:grs-pearl-current var(--grs-time,5s) linear infinite; }
+.gc-window .grs-pearl-flare { animation:grs-pearl-flare var(--grs-time,6s) ease-in-out infinite; }
+.gc-window .grs-pearl-lens { animation:grs-pearl-lens var(--grs-time,8s) ease-in-out infinite; }
+.gc-window .grs-pearl-mote { animation:grs-pearl-mote var(--grs-time,7s) ease-in-out infinite; }
+/* Apply phase AFTER animation shorthands. Static SVG placements must retain
+   their local origins; only nested geometry receives animated transforms. */
+.gc-window .grs-field [class^="grs-"] { animation-delay:var(--grs-delay,0s); }
+.gc-window .grs-field .grs-anchor { transform-origin:0 0; transform-box:view-box; }
+/* v1.3: one static 18-only seat; preserve all nacre materials and clocks. */
+.gc-window[data-effect="18"] .grs-field .grs-opal-seat { transform-origin:0 0; transform-box:view-box; }
+
+@keyframes grs-foil-flow {
+  0%,100% { transform:translate(0,-2px) scaleX(.99); opacity:.92; }
+  36% { transform:translate(1px,3px) scaleX(1.035); opacity:1; }
+  72% { transform:translate(-1px,1px) scaleX(1.008); opacity:.96; }
+}
+@keyframes grs-foil-fold {
+  0%,100% { transform:translate(0,2px) skewY(-1deg); opacity:.8; }
+  45% { transform:translate(1px,-3px) skewY(1.7deg); opacity:1; }
+  73% { transform:translate(-1px,-1px) skewY(.3deg); opacity:.9; }
+}
+@keyframes grs-foil-current { from { stroke-dashoffset:0; } to { stroke-dashoffset:-1000; } }
+@keyframes grs-foil-facet { 0%,100% { opacity:.91; } 42% { opacity:1; } 71% { opacity:.95; } }
+@keyframes grs-spectrum-flare {
+  0%,100% { opacity:.69; transform:scale(.83); }
+  38% { opacity:.81; transform:scale(.95); }
+  47% { opacity:1; transform:scale(1.19); }
+  62% { opacity:.8; transform:scale(.96); }
+}
+@keyframes grs-foil-dust {
+  0%,100% { opacity:.18; transform:translate(-1px,5px); }
+  43% { opacity:.93; transform:translate(2px,-4px); }
+  71% { opacity:.48; transform:translate(1px,-6px); }
+}
+@keyframes grs-pearl-bed {
+  0%,100% { opacity:.84; transform:scale(.98); }
+  55% { opacity:1; transform:scale(1.055); }
+}
+@keyframes grs-pearl-lobe {
+  0%,100% { opacity:.9; transform:translate(0,-2px) scaleX(.98); }
+  51% { opacity:1; transform:translate(1px,3px) scaleX(1.04); }
+}
+@keyframes grs-pearl-lamella {
+  0%,100% { opacity:.86; transform:translate(0,2px) skewY(-.7deg); }
+  47% { opacity:1; transform:translate(-1px,-3px) skewY(.8deg); }
+}
+@keyframes grs-pearl-core {
+  0%,100% { opacity:.84; transform:scaleX(.94) translateY(1px); }
+  37% { opacity:.95; transform:scaleX(1.04) translateY(-1px); }
+  60% { opacity:1; transform:scaleX(1.08) translateY(-2px); }
+}
+@keyframes grs-pearl-ridge {
+  0%,100% { opacity:.83; transform:translateX(-1px); }
+  49% { opacity:1; transform:translateX(1px); }
+}
+@keyframes grs-pearl-current { from { stroke-dashoffset:0; } to { stroke-dashoffset:1000; } }
+@keyframes grs-pearl-flare {
+  0%,100% { opacity:.74; transform:scale(.83); }
+  42% { opacity:.87; transform:scale(.96); }
+  55% { opacity:1; transform:scale(1.18); }
+  70% { opacity:.9; transform:scale(1.02); }
+}
+@keyframes grs-pearl-lens {
+  0%,100% { opacity:.8; transform:scale(.92) translateY(2px); }
+  53% { opacity:1; transform:scale(1.09) translateY(-2px); }
+}
+@keyframes grs-pearl-mote {
+  0%,100% { opacity:.23; transform:translate(0,5px); }
+  52% { opacity:.85; transform:translate(2px,-5px); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .gc-window .grs-field * { animation:none!important; }
+  .gc-window .grs-foil-current, .gc-window .grs-pearl-current { stroke-dashoffset:-210; opacity:.8; }
+  .gc-window .grs-spectrum-flare, .gc-window .grs-pearl-flare { opacity:.86; }
+}

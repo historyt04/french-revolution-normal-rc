@@ -1,0 +1,67 @@
+/* Reference corona animations. Only descendants of the shared artwork mask.
+ * No border, background colour wash, external SVG or canvas.
+ * Effects 13/14 use filled local volume; no SVG displacement/blur filters.
+ */
+.gc-window .grh-line{fill:none;stroke-linecap:round;stroke-linejoin:round}
+/* Raw SVG transforms place/mirror shapes in viewBox coordinates. Animation lives
+ * on separate nested groups, so the core fill-box origin must not affect these. */
+.gc-window .grh-field [transform]{transform-box:view-box;transform-origin:0 0}
+.gc-window .grh-star{animation:grh-starlight var(--grh-duration,3s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+
+/* 13/14 only: normal alpha compositing keeps saturated amber/red undersides
+ * visible over a bright painting, while the white cores stay in the foreground.
+ * No changes to mask/stacking; the original frame and writing remain above. */
+.gc-window[data-effect="13"],.gc-window[data-effect="14"]{mix-blend-mode:normal}
+
+/* 13: six substantial molten segments, independently moving internal currents,
+ * multi-coloured gold curls and small, staggered platinum lens glints. */
+.gc-window[data-effect="13"] .grh-solar-volume{animation:grh-solar-volume var(--grh-duration,9s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="13"] .grh-solar-volume-haze{animation:grh-solar-volume-haze var(--grh-duration,10s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="13"] .grh-solar-heat{animation:grh-solar-heat var(--grh-duration,5s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="13"] .grh-solar-arc{animation:grh-solar-arc var(--grh-duration,6s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="13"] .grh-solar-current{animation:grh-solar-current var(--grh-duration,9s) linear infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="13"] .grh-solar-curl{animation:grh-solar-curl var(--grh-duration,4s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="13"] .grh-solar-mote{animation:grh-solar-mote var(--grh-duration,6s) linear infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="13"] .grh-solar-glint{animation:grh-solar-glint var(--grh-duration,6s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+
+/* 14: stationary, thick copper/red-gold masses with counter-flowing fissures.
+ * Only the short metal splinters translate; no mantle/flame rises or scales.
+ * Every local source has an unequal period/phase, with no card-wide flashes. */
+.gc-window[data-effect="14"] .grh-molten-mantle{animation:grh-molten-mantle var(--grh-duration,9s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="14"] .grh-molten-lobe{animation:grh-molten-lobe var(--grh-duration,8s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="14"] .grh-molten-flow{animation:grh-molten-flow var(--grh-duration,13s) linear infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="14"] .grh-molten-flow-reverse{animation-direction:reverse}
+.gc-window[data-effect="14"] .grh-molten-fissure{animation:grh-molten-fissure var(--grh-duration,9s) linear infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="14"] .grh-molten-fissure-reverse{animation-direction:reverse}
+.gc-window[data-effect="14"] .grh-metal-spark{animation:grh-metal-spark var(--grh-duration,8s) linear infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window[data-effect="14"] .grh-molten-flare{animation:grh-molten-flare var(--grh-duration,10s) linear infinite;animation-delay:var(--grh-delay,0s)}
+
+/* 15: slow depth-cloud drift, counter-moving wisps, uncorrelated star pulses. */
+.gc-window .grh-nebula-lobe{animation:grh-nebula-lobe var(--grh-duration,12s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window .grh-nebula-wisp{animation:grh-nebula-wisp var(--grh-duration,13s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window .grh-stellar-dust{animation:grh-stellar-dust var(--grh-duration,5s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+.gc-window .grh-nebula-diamond{animation:grh-nebula-diamond var(--grh-duration,5s) ease-in-out infinite;animation-delay:var(--grh-delay,0s)}
+
+@keyframes grh-starlight{0%,100%{opacity:.45;transform:scale(.78)}29%{opacity:.7;transform:scale(.91)}48%{opacity:1;transform:scale(1.08)}66%{opacity:.7;transform:scale(.91)}}
+@keyframes grh-solar-volume{0%,100%{opacity:.81}29%{opacity:.96}61%{opacity:.87}82%{opacity:1}}
+@keyframes grh-solar-volume-haze{0%,100%{opacity:.66}36%{opacity:.9}69%{opacity:.74}}
+@keyframes grh-solar-heat{0%,100%{opacity:.77;transform:scale(.98)}37%{opacity:.98;transform:scale(1.03)}73%{opacity:.86;transform:scale(1.01)}}
+@keyframes grh-solar-arc{0%,100%{opacity:.88}24%{opacity:.96}48%{opacity:1}76%{opacity:.91}}
+@keyframes grh-solar-current{to{stroke-dashoffset:-402}}
+@keyframes grh-solar-curl{0%,100%{opacity:.57;transform:translate(0,1px) scaleY(.97)}31%{opacity:1;transform:translate(.8px,-1.2px) scaleY(1.03)}64%{opacity:.82;transform:translate(-.6px,-.2px) scaleY(1.01)}}
+@keyframes grh-solar-mote{0%{opacity:0;transform:translate(0,5px) scale(.75)}16%{opacity:.93}45%{opacity:.67}71%{opacity:1}100%{opacity:0;transform:translate(var(--grh-drift,2px),calc(-1 * var(--grh-rise,20px))) scale(.71)}}
+@keyframes grh-solar-glint{0%,100%{opacity:.2;transform:scale(.77)}27%{opacity:.33;transform:scale(.91)}39%{opacity:.55;transform:scale(1)}47%{opacity:1;transform:scale(1.16)}55%{opacity:.57;transform:scale(1.02)}72%{opacity:.24;transform:scale(.83)}}
+@keyframes grh-molten-mantle{0%,100%{opacity:.82}33%{opacity:.97}71%{opacity:.88}}
+@keyframes grh-molten-lobe{0%,100%{opacity:.72}27%{opacity:.94}59%{opacity:.78}82%{opacity:.88}}
+@keyframes grh-molten-flow{to{stroke-dashoffset:-431}}
+@keyframes grh-molten-fissure{0%,100%{opacity:.75}39%{opacity:1}73%{opacity:.85}100%{stroke-dashoffset:-173}}
+@keyframes grh-metal-spark{0%,1%{opacity:0;transform:translate(0,0)}2%{opacity:1;transform:translate(0,0)}5%{opacity:.91;transform:translate(calc(var(--grh-spark-x,16px)*.35),calc(var(--grh-spark-y,-7px)*.35))}10%{opacity:.5;transform:translate(calc(var(--grh-spark-x,16px)*.76),calc(var(--grh-spark-y,-7px)*.76))}15%,100%{opacity:0;transform:translate(var(--grh-spark-x,16px),var(--grh-spark-y,-7px))}}
+@keyframes grh-molten-flare{0%,100%{opacity:.12}10%{opacity:.2}14%{opacity:.96}19%{opacity:.3}31%{opacity:.14}}
+@keyframes grh-nebula-lobe{0%,100%{opacity:.76;transform:translate(0,2px) scale(.95)}36%{opacity:.98;transform:translate(3px,-2px) scale(1.05)}72%{opacity:.88;transform:translate(-2px,-4px) scale(1.01)}}
+@keyframes grh-nebula-wisp{0%,100%{opacity:.38;transform:translate(1px,-3px) scaleY(.98)}53%{opacity:.79;transform:translate(-2px,5px) scaleY(1.04)}}
+@keyframes grh-stellar-dust{0%,100%{opacity:.2;transform:translateY(2px) scale(.7)}34%{opacity:.84;transform:translateY(-.8px) scale(1.02)}56%{opacity:.44}78%{opacity:1;transform:translateY(-2px) scale(.91)}}
+@keyframes grh-nebula-diamond{0%,100%{opacity:.5;transform:rotate(-7deg) scale(.89)}48%{opacity:1;transform:rotate(7deg) scale(1.07)}}
+
+/* Core engine also pauses hidden cards/tabs. This explicit reduced-motion rule
+ * protects these optional renderers even if a host omits the core stylesheet. */
+@media(prefers-reduced-motion:reduce){.gc-window .grh-field *{animation-play-state:paused!important}}

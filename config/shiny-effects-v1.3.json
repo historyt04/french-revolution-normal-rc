@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "rendererVersion": "1.3.0-preview.1",
+  "effectIdRange": {"min": "01", "max": "18"},
+  "assignments": {
+    "normal": ["01", "04"],
+    "rare": ["02", "16"],
+    "unique": ["05", "06"],
+    "legend": ["03", "11", "12"],
+    "myth": ["09", "12", "16"]
+  },
+  "display": {
+    "defaultIntensity": 1,
+    "previewMaximumIntensity": 1.4
+  },
+  "unassignedCandidates": ["07", "08", "10", "13", "14", "15", "17", "18"],
+  "compatibility": {
+    "preserveExistingEffectIds": true,
+    "rewriteExistingEffectIds": false
+  }
+}

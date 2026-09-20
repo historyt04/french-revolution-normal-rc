@@ -1,0 +1,102 @@
+/* Reference optics v1.1. Kept scoped to the shared, artwork-only mask.
+   Geometry stays visible at rest; animations change light, not card framing. */
+.gc-window .grc-reference-field { overflow: hidden; }
+.gc-window .grc-reference-field [class^="grc-"] {
+  animation-delay: var(--grc-delay, 0s);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.gc-window .grc-cold-bed { animation: grc-cold-bed 5.9s ease-in-out infinite; }
+.gc-window .grc-ice-facet { animation: grc-ice-facet 5.2s ease-in-out infinite; }
+.gc-window .grc-facet-flare { animation: grc-facet-flare 4.8s ease-in-out infinite; }
+.gc-window .grc-cold-thread { animation: grc-cold-thread 6.7s ease-in-out infinite; }
+.gc-window .grc-cold-needle { animation: grc-cold-needle 4.4s ease-in-out infinite; }
+.gc-window .grc-ice-dust { animation: grc-ice-fall var(--grc-time, 6s) linear infinite; }
+.gc-window .grc-star { animation: grc-star var(--grc-time, 4.3s) ease-in-out infinite; }
+.gc-window .grc-spectrum-bed { animation: grc-spectrum-bed 6.2s ease-in-out infinite; }
+.gc-window .grc-spectrum-ribbon { animation: grc-spectrum-ribbon 7.1s ease-in-out infinite; }
+.gc-window .grc-spectrum-thread { animation: grc-spectrum-thread 5.6s ease-in-out infinite; }
+.gc-window .grc-spectrum-facet { animation: grc-spectrum-facet 4.7s ease-in-out infinite; }
+.gc-window .grc-spectrum-star { animation: grc-star 3.8s ease-in-out infinite; }
+.gc-window .grc-spectrum-dust { animation: grc-spectrum-dust var(--grc-time, 5s) ease-in-out infinite; }
+.gc-window .grc-clear-aura { animation: grc-clear-aura 7.6s ease-in-out infinite; }
+.gc-window .grc-clear-ribbon { animation: grc-clear-ribbon 6.8s ease-in-out infinite; }
+.gc-window .grc-clear-facet { animation: grc-clear-facet 6.1s ease-in-out infinite; }
+.gc-window .grc-clear-thread { animation: grc-clear-thread 4.7s ease-in-out infinite; }
+.gc-window .grc-clear-sweep { animation: grc-clear-sweep 3.8s ease-in-out infinite; }
+.gc-window .grc-clear-dust { animation: grc-clear-dust var(--grc-time, 5.8s) ease-in-out infinite; }
+.gc-window .grc-clear-star { animation: grc-clear-star var(--grc-time, 4s) ease-in-out infinite; }
+.gc-window .grc-opal-cloud { animation: grc-opal-cloud 12.7s ease-in-out infinite; }
+.gc-window .grc-opal-flow { animation: grc-opal-flow 10.4s ease-in-out infinite; }
+.gc-window .grc-opal-lustre { animation: grc-opal-lustre 8.7s ease-in-out infinite; }
+.gc-window .grc-opal-pearl { animation: grc-opal-pearl 11.3s ease-in-out infinite; }
+.gc-window .grc-opal-dust { animation: grc-opal-dust var(--grc-time, 7s) ease-in-out infinite; }
+.gc-window .grc-opal-star { animation: grc-opal-star 6.8s ease-in-out infinite; }
+/* The animation shorthand resets animation-delay, so apply phase offsets last. */
+.gc-window .grc-reference-field [class^="grc-"] { animation-delay: var(--grc-delay, 0s); }
+.gc-window .grc-reference-field .grc-anchor {
+  /* Static placement uses SVG's local origin, not the animated facet centre. */
+  transform-origin: 0 0;
+  transform-box: view-box;
+}
+
+@keyframes grc-cold-bed { 0%,100% { opacity:.63; } 48% { opacity:.98; } }
+@keyframes grc-ice-facet { 0%,100% { opacity:.78; } 35% { opacity:.96; } 63% { opacity:1; } }
+@keyframes grc-facet-flare { 0%,16%,100% { opacity:.16; } 39%,51% { opacity:.97; } 73% { opacity:.27; } }
+@keyframes grc-cold-thread { 0%,100% { opacity:.43; } 47% { opacity:.93; } }
+@keyframes grc-cold-needle { 0%,100% { opacity:.39; transform:translateY(-2px); } 51% { opacity:.94; transform:translateY(2px); } }
+@keyframes grc-ice-fall { 0% { opacity:0; transform:translate(-1px,-14px); } 23% { opacity:.88; } 73% { opacity:.51; } 100% { opacity:0; transform:translate(5px,26px); } }
+@keyframes grc-star { 0%,100% { opacity:.42; transform:scale(.68) rotate(0deg); } 39% { opacity:.97; transform:scale(1.02) rotate(7deg); } 72% { opacity:.63; transform:scale(.83) rotate(3deg); } }
+@keyframes grc-spectrum-bed { 0%,100% { opacity:.6; } 52% { opacity:.92; } }
+@keyframes grc-spectrum-ribbon { 0%,100% { opacity:.78; transform:translate(0,-3px) scaleX(.96); } 51% { opacity:1; transform:translate(1px,4px) scaleX(1.035); } }
+@keyframes grc-spectrum-thread { 0%,100% { opacity:.57; transform:translateY(2px); } 49% { opacity:1; transform:translateY(-3px); } }
+@keyframes grc-spectrum-facet { 0%,100% { opacity:.77; } 41% { opacity:1; } 71% { opacity:.84; } }
+@keyframes grc-spectrum-dust { 0%,100% { opacity:.12; transform:translateY(6px); } 47% { opacity:.88; transform:translateY(-7px); } }
+@keyframes grc-clear-aura { 0%,100% { opacity:.45; } 48% { opacity:.79; } }
+@keyframes grc-clear-ribbon { 0%,100% { opacity:.55; transform:translateY(-2px); } 53% { opacity:.91; transform:translateY(3px); } }
+@keyframes grc-clear-facet { 0%,100% { opacity:.66; } 38% { opacity:.9; } 60% { opacity:1; } 82% { opacity:.79; } }
+@keyframes grc-clear-thread { 0%,100% { opacity:.34; } 52% { opacity:.83; } }
+@keyframes grc-clear-sweep { 0%,12% { opacity:0; transform:translate(-115px,30px); } 22% { opacity:.84; } 64% { opacity:.78; } 84%,100% { opacity:0; transform:translate(430px,-45px); } }
+@keyframes grc-clear-dust { 0%,100% { opacity:.1; } 36% { opacity:.8; } 69% { opacity:.34; } }
+@keyframes grc-clear-star { 0%,100% { opacity:.3; transform:scale(.67); } 43% { opacity:.96; transform:scale(1.06); } 65% { opacity:.53; transform:scale(.8); } }
+@keyframes grc-opal-cloud { 0%,100% { opacity:.69; transform:scale(.94) translateY(-2px); } 52% { opacity:.95; transform:scale(1.06) translateY(4px); } }
+@keyframes grc-opal-flow { 0%,100% { opacity:.72; transform:translate(0,-4px) scaleX(.95); } 48% { opacity:.93; transform:translate(1px,5px) scaleX(1.065); } }
+@keyframes grc-opal-lustre { 0%,100% { opacity:.56; } 53% { opacity:.92; } }
+@keyframes grc-opal-pearl { 0%,100% { opacity:.56; transform:scale(.94); } 49% { opacity:.89; transform:scale(1.05); } }
+@keyframes grc-opal-dust { 0%,100% { opacity:.18; transform:translateY(6px); } 53% { opacity:.72; transform:translateY(-5px); } }
+@keyframes grc-opal-star { 0%,100% { opacity:.39; transform:scale(.75); } 48% { opacity:.82; transform:scale(.99); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-window .grc-reference-field * { animation:none!important; }
+  .gc-window .grc-clear-sweep { opacity:0; }
+  .gc-window .grc-facet-flare { opacity:.55; }
+}
+
+/* v1.2: effect 16 only. Opaque crystal faces sit in front of the artwork;
+   the shared artwork mask and frame/text z-order are deliberately unchanged.
+   Normal compositing preserves blue/lilac facets on pale painted backgrounds. */
+.gc-window[data-effect="16"] { mix-blend-mode:normal; }
+/* v1.3: tone-only attenuation keeps every existing animation clock and facet
+   intact. The whole optical layer stays in front of art, with no centre mask. */
+.gc-window[data-effect="16"] .grc-reference-field { opacity:.64; filter:brightness(.92) saturate(.76) contrast(.94); }
+.gc-window[data-effect="16"] .grc-reference-field .grc-edge-seat { transform-origin:0 0; transform-box:view-box; }
+.gc-window[data-effect="16"] .grc-clear-aura { animation:grc-front-aura 7.6s ease-in-out infinite; }
+.gc-window[data-effect="16"] .grc-clear-ribbon { animation:grc-front-ribbon 6.8s ease-in-out infinite; }
+.gc-window[data-effect="16"] .grc-clear-thread { animation:grc-front-thread 4.7s ease-in-out infinite; }
+.gc-window[data-effect="16"] .grc-clear-sweep { animation:grc-front-sweep 4.2s ease-in-out infinite; }
+.gc-window[data-effect="16"] .grc-front-crystal { animation:grc-front-crystal var(--grc-time,5.6s) ease-in-out infinite; }
+.gc-window[data-effect="16"] .grc-front-crystal-glint { animation:grc-front-glint var(--grc-time,5.6s) ease-in-out infinite; }
+.gc-window[data-effect="16"] .grc-clear-star { animation:grc-front-star var(--grc-time,4s) ease-in-out infinite; }
+.gc-window[data-effect="16"] .grc-reference-field [class^="grc-"] { animation-delay:var(--grc-delay,0s); }
+@keyframes grc-front-aura { 0%,100% { opacity:.67; } 48% { opacity:.96; } }
+@keyframes grc-front-ribbon { 0%,100% { opacity:.88; transform:translateY(-1px); } 53% { opacity:1; transform:translateY(2px); } }
+@keyframes grc-front-thread { 0%,100% { opacity:.8; } 52% { opacity:1; } }
+@keyframes grc-front-crystal { 0%,100% { opacity:.94; } 38% { opacity:1; } 76% { opacity:.98; } }
+@keyframes grc-front-glint { 0%,100% { opacity:.32; } 28% { opacity:.5; } 41%,48% { opacity:1; } 73% { opacity:.4; } }
+@keyframes grc-front-star { 0%,100% { opacity:.62; transform:scale(.83); } 43% { opacity:1; transform:scale(1.12); } 67% { opacity:.74; transform:scale(.91); } }
+@keyframes grc-front-sweep { 0%,9% { opacity:0; transform:translate(-115px,30px); } 23% { opacity:.92; } 64% { opacity:.94; } 89%,100% { opacity:0; transform:translate(430px,-45px); } }
+@media (prefers-reduced-motion:reduce) {
+  .gc-window[data-effect="16"] .grc-reference-field * { animation:none!important; }
+  .gc-window[data-effect="16"] .grc-clear-sweep { opacity:0; }
+  .gc-window[data-effect="16"] .grc-front-crystal-glint { opacity:.65; }
+}

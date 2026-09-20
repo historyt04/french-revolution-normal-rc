@@ -1,0 +1,17 @@
+.gc-window .gry-field [transform]{transform-origin:0 0;transform-box:view-box}
+.gc-window .gry-thread{animation:gry-thread-breathe var(--dur,8s) ease-in-out infinite;animation-delay:var(--delay,0s)}
+.gc-window .gry-travel{animation:gry-thread-flow var(--dur,6s) linear infinite;animation-delay:var(--delay,0s)}
+.gc-window .gry-aureole{animation:gry-amber-depth 9s ease-in-out infinite}
+.gc-window .gry-leaf{animation:gry-leaf-turn 8.3s ease-in-out infinite;animation-delay:var(--delay,0s)}
+.gc-window .gry-shaft{animation:gry-shaft-sway var(--dur,8s) ease-in-out infinite;animation-delay:var(--delay,0s);transform-origin:top left}
+.gc-window .gry-crown{animation:gry-crown-breathe 11s ease-in-out infinite}
+.gc-window .gry-mote{animation:gry-gold-rise var(--dur,7s) linear infinite;animation-delay:var(--delay,0s)}
+.gc-window .gry-jewel{animation:gry-gilded-glint 5.7s ease-in-out infinite;animation-delay:var(--delay,0s)}
+@keyframes gry-thread-breathe{0%,100%{opacity:.58}46%{opacity:1}}
+@keyframes gry-thread-flow{0%{stroke-dashoffset:8;opacity:0}14%{opacity:.9}83%{opacity:.8}100%{stroke-dashoffset:108;opacity:0}}
+@keyframes gry-amber-depth{0%,100%{opacity:.38}50%{opacity:.73}}
+@keyframes gry-leaf-turn{0%,100%{opacity:.25;transform:scaleX(.86)}40%{opacity:.72;transform:scaleX(1)}}
+@keyframes gry-shaft-sway{0%,100%{opacity:.38;transform:rotate(-2deg)}50%{opacity:.8;transform:rotate(2deg)}}
+@keyframes gry-crown-breathe{0%,100%{opacity:.32;transform:scaleX(.9)}60%{opacity:.8;transform:scaleX(1.02)}}
+@keyframes gry-gold-rise{0%{opacity:0;transform:translate(0,20px)}18%{opacity:.8}76%{opacity:.5}100%{opacity:0;transform:translate(4px,-46px)}}
+@keyframes gry-gilded-glint{0%,100%{opacity:.4;transform:scale(.7)}40%{opacity:1;transform:scale(1.12)}70%{opacity:.65;transform:scale(.9)}}

@@ -1,0 +1,13 @@
+/* Same coordinate system as the game's history-card.css; never mask the frame. */
+.gc-card{--gc-picture-left:8.25%;--gc-picture-top:18.8%;--gc-picture-width:83.5%;--gc-picture-height:51.4%;position:relative;isolation:isolate;aspect-ratio:2/3;container-type:inline-size;width:100%}
+.gc-art,.gc-window{position:absolute;left:var(--gc-picture-left);top:var(--gc-picture-top);width:var(--gc-picture-width);height:var(--gc-picture-height)}
+.gc-art{display:block;z-index:1;object-fit:cover;margin:0;border:0}
+.gc-window{z-index:2;pointer-events:none;overflow:hidden;contain:paint;clip-path:inset(0 round 2.4%)}
+.gc-frame{position:absolute;inset:0;display:block;width:100%;height:100%;z-index:3;pointer-events:none;object-fit:fill;margin:0;border:0}
+.gc-text{position:absolute;z-index:4;pointer-events:none}
+/* Adapter hook for the game's existing renderer, only on an explicitly mounted card. */
+.history-card.glow-kit-mounted .history-card__picture{z-index:1}
+.history-card.glow-kit-mounted .gc-window{z-index:2}
+.history-card.glow-kit-mounted .history-card__frame{z-index:3}
+.history-card.glow-kit-mounted{--gc-picture-left:8.25%;--gc-picture-top:18.8%;--gc-picture-width:83.5%;--gc-picture-height:51.4%}
+.history-card.glow-kit-mounted .history-card__fx,.history-card.glow-kit-mounted .history-card__foil,.history-card.glow-kit-mounted .shiny25-overlay{display:none}

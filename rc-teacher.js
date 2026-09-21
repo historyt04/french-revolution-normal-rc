@@ -18,7 +18,7 @@
  render=function(){renderBeforeUnlock();if(info&&['cards','learning26'].includes(tab))el.querySelector('main')?.insertAdjacentHTML('beforeend',unlockPanel());};
  const renderBase=render;
  render=function(){renderBase();syncRewards();for(const form of document.querySelectorAll('form')){if(!form.elements.studentId)continue;syncStudent(form);for(const key of ['scope',...targetKeys]){const input=form.elements[key];if(!input)continue;input.addEventListener(key==='scope'?'change':'input',()=>syncStudent(form));}}const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);while(walker.nextNode())walker.currentNode.textContent=walker.currentNode.textContent.replaceAll('이로치','광휘');};
- document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:'rc-cinematic.css?v=42-rc-gifts-unlocks-20260921'}));document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:'rc-teacher.css?v=42-rc-gifts-unlocks-20260921'}));
+ document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:'rc-cinematic.css?v=42-rc-cssfix-20260922'}));document.head.appendChild(Object.assign(document.createElement('link'),{rel:'stylesheet',href:'rc-teacher.css?v=42-rc-cssfix-20260922'}));
  if(window.HISTORY_API_CONFIG?.rcLocalPreview&&new URLSearchParams(location.search).has('preview'))fetch('/__preview?role=teacher').then(r=>r.json()).then(async session=>{API.saveSession(session);await refresh();tab='cards';render();}).catch(e=>msg(e.message));else if(info)render();
  window.RCTeacher={syncRewards,syncStudent,createUnlock,readUnlocks,revokeUnlock};
 })();

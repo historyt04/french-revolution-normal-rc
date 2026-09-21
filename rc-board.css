@@ -10,3 +10,19 @@
 .r27-board .login,.r27-board .login h1,.r27-board .login h2,.r27-board .login label{color:#26333e!important}
 .r27-board main{max-width:1400px;margin:auto;padding:24px}
 .r27-board h1{font-size:clamp(25px,4vw,47px)}
+.r27-board-controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+.r27-board-controls form{display:flex;align-items:end;gap:12px;flex-wrap:wrap;flex:1}
+.r27-board-controls label{display:grid;gap:5px;font-weight:800}
+.r27-board-controls input{width:105px}
+.r27-board button:focus-visible,.r27-board input:focus-visible,.r27-board select:focus-visible{outline:3px solid #fff1a8;outline-offset:3px}
+.r27-ranking-controls{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 0 20px}
+.r27-ranking-controls button.active{background:#f0d497;color:#25170c;border-color:#fff1c6;box-shadow:0 0 0 3px #8b623b}
+.r27-ranking-controls label{display:flex;align-items:center;gap:8px}
+.r27-ranking-table-wrap{max-height:min(55vh,680px);overflow:auto;border:1px solid #9f8050;border-radius:14px;background:#0a1620}
+.r27-ranking-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.r27-ranking-table th{position:sticky;top:0;z-index:1;background:#ead8b3;color:#2f2114}
+.r27-ranking-table th,.r27-ranking-table td{padding:12px 16px;text-align:left}
+.r27-ranking-table tbody tr:nth-child(even){background:#f3e4c80d}
+.r27-ranking-table td:last-child{font-weight:900;color:#ffe6a8}
+.r27-ranking-note{color:#f4e5c8!important;text-align:center;margin:12px 0 0}
+@media(max-width:700px){.r27-board main{padding:12px}.r27-ranking-table th,.r27-ranking-table td{padding:10px 8px}.r27-ranking-table th:nth-child(3),.r27-ranking-table td:nth-child(3){display:none}}

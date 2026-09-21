@@ -12,9 +12,10 @@ function completionSettingsPage(){
  </div>${r.pack?.minR?'<p class="muted">기존 첫 팩 레어 이상 보장을 유지합니다. 확정팩은 해당 등급 확정 규칙이 우선합니다.</p>':''}</details>`}).join('')}
  <h2>게임별 중단·재개</h2><p>‘학생이 선택’이 기본입니다. 스피드런·미끼런·페이스오프를 이어하면 연습 기록이 되어 공식 기록·보상에 반영되지 않습니다.</p><div class="formgrid">
  ${Object.entries(modeNames).map(([m,n])=>`<label>${n}<select name="resume_${m}">${opts({choose:'학생이 선택',resume:'항상 이어하기',restart:'항상 처음부터 시작'},s.resume[m])}</select></label>`).join('')}
- <label>진행 기록 보관 기간<select name="retention">${opts({day:'당일', '3d':'3일','7d':'7일',unit:'단원 종료까지'},s.retention)}</select></label>
+ <label>미완료 게임 임시 상태 보관<select name="retention">${opts({day:'당일', '3d':'3일','7d':'7일',unit:'단원 종료까지'},s.retention)}</select></label>
  <label>단원 종료 시각 (한국시간)<input name="unitEndsAt" type="datetime-local" value="${s.unitEndsAt?new Date(Date.parse(s.unitEndsAt)+9*3600000).toISOString().slice(0,16):''}"></label></div>
- <p class="muted">기간이 끝난 진행은 포기 상태로 남기며 자동 영구 삭제하지 않습니다. 새 시도부터 변경한 보관 기간이 적용됩니다. 단원 종료까지를 선택하면 종료 시각이 필요합니다.</p>
+ <p class="muted">미완료 게임 임시 상태 보관: ${s.retention==='day'?'당일':s.retention==='3d'?'3일':s.retention==='7d'?'7일':'단원 종료까지'}</p>
+ <p class="muted">보관 기간이 지나면 완료하지 않은 게임의 임시 진행 상태만 포기 상태로 전환됩니다. 완료 성적·연간 통계·XP·보상·카드·도감·미션·출석 기록은 삭제되지 않습니다. 새 시도부터 변경한 기간이 적용됩니다.</p>
  <p>짝맞추기 공식 기록 조건은 ‘고급모드 12세트’로 고정되어 보상 설정과 함께 바뀌지 않습니다. 교사 연습모드는 설정과 관계없이 자유롭게 이어하기·재시작할 수 있으며 실제 보상은 없습니다.</p>
  <button class="primary">완료 보상·중단 설정 저장</button></form></section>`;
 }

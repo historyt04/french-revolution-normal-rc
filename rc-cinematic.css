@@ -27,4 +27,8 @@ html{background:var(--rc-bg);scroll-behavior:smooth}body{background:linear-gradi
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rc-reveal-stage *{animation:none!important;transition:none!important}}
 .rc-event-tile{touch-action:none;user-select:none}.rc-event-tile img{pointer-events:none;-webkit-user-drag:none}.rc-drag-ghost{position:fixed!important;z-index:250000!important;width:140px!important;pointer-events:none!important;transform:translate(-50%,-50%) rotate(-4deg);opacity:.9;box-shadow:0 16px 35px #000b!important}.rc-left-note,.rc-right-note{word-break:keep-all}
 html:has(.rewardmodal,.cardinspect,.celebration25,.rc-first-glow){overflow:hidden}
+.inspect25>.rc-detail-card{width:min(520px,86vw,calc((100dvh - 220px)*.6667))!important;margin:16px auto!important}.rc-detail-card>.history-card{width:100%!important;max-width:none!important}.inspect25 h2{margin:0 0 8px}
+.book25 .history-card__meta>span:first-child,.inspect25 .history-card__meta>span:first-child{display:none!important}
+.book25 .card-readable-title42,.book25 .card-readable-rarity42,.inspect25 .card-readable-title42,.inspect25 .card-readable-rarity42{display:none!important}
 .rc-page .r27-checks label,.rc-page .r27-stat,.rc-page .r27-notice,.rc-page .r27 details,.rc-page .r27 table{color:#172b35!important}.rc-page .r27-checks label{background:#f4ead4!important}.rc-page .r27-stat,.rc-page .r27 details,.rc-page .r27 table{background:#f7eedf!important}.rc-page .r27-note,.rc-page .r27 td small{color:#3e515a!important}
+.rc-page .collectionsubnav button:not(.on){background:#fff!important;color:#172b3b!important;border-color:#bca987!important}.rc-page .collectionsubnav button.on{background:#963e49!important;color:#fff!important;border-color:#963e49!important}

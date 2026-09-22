@@ -3,7 +3,7 @@
  const answerLegacy=answer;
  const quizModes=new Set(['beginner','intermediate']);
  const findQuestion=s=>(s.localQuestions||[]).find(q=>q.id===s.sequence[s.pos]);
- function setQuestion(s){const q=findQuestion(s);s.question=q?{id:q.id,eventId:q.eventId,type:q.type,prompt:q.prompts[(s.retryRounds[q.id]||0)%q.prompts.length],image:q.image}:null}
+ function setQuestion(s){const q=findQuestion(s),round=q?(s.retryRounds[q.id]||0):0;s.question=q?{id:q.id,eventId:q.eventId,type:q.type,prompt:q.prompts[0],image:q.image,hint:round?q.hints?.[Math.min(round-1,(q.hints?.length||1)-1)]||'':'',pass:round+1}:null}
  function advanceLocal(a){const s=a.state;if(s.pos<s.sequence.length-1)s.pos++;else{const failed=s.originalSequence.filter(id=>!s.passed[id]);s.firstPassDone=true;if(!failed.length)return true;s.phase='retry';s.sequence=failed;s.pos=0;failed.forEach(id=>s.retryRounds[id]=(s.retryRounds[id]||0)+1)}s.roundAttempts=0;s.result='';setQuestion(s);return false}
  const applyBase=applyAttempt42;
  applyAttempt42=function(a){applyBase(a);if(a?.status==='active'&&a.state?.v26&&quizModes.has(a.mode)&&Array.isArray(a.state.localQuestions)){a.localSubmissions=a.localSubmissions||[];setQuestion(a.state)}};

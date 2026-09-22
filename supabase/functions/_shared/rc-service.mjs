@@ -167,7 +167,7 @@ export function makeBatchService({store,namespace,pepper,backupKey,now=()=>Date.
 export function publicBootstrap({pepper,schoolYear=2026,schools=[],copyright={},now=()=>Date.now(),token=()=>randomBytes(32).toString('base64url')}) {
   invariant(typeof pepper==='string'&&pepper.length>=16,'SERVER_CONFIGURATION_REQUIRED');
   const expiresAt=now()+120000,nonce=token(),hash=gasHash(pepper);
-  return {ok:true,data:{ticket:{expiresAt,nonce,signature:hash('ticket:'+expiresAt+':'+nonce)},serverNow:now(),schoolYear,version:'4.3-speed1',schools,copyright}};
+  return {ok:true,data:{ticket:{expiresAt,nonce,signature:hash('ticket:'+expiresAt+':'+nonce)},serverNow:now(),schoolYear,version:'4.3-quiz50',schools,copyright}};
 }
 
 export function makeRpcStore({url,key,fetchImpl=fetch}) {

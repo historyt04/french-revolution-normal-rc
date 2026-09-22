@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {emptyTables,Repository} from '../supabase/functions/_shared/rc-data.mjs';
 import {createService,rules} from '../supabase/functions/_shared/gas-v6-domain.mjs';
 import {gasHash,makeBatchService,makeService,publicBootstrap} from '../supabase/functions/_shared/rc-service.mjs';
+import {QUIZ_BANK50} from '../supabase/functions/_shared/quiz-bank50.mjs';
 
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const apply=(tables,changes)=>{
@@ -71,6 +72,7 @@ assert.equal(new Set(loginResults.map(result=>result.data.token)).size,30);
 const prepareResults=await Promise.all(loginResults.map((loginResult,i)=>loginBatch({action:'attempt.prepare',payload:{mode:'beginner'},requestId:`prepare-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket,token:loginResult.data.token})));
 assert.equal(prepareResults.filter(result=>!result.ok).length,0);
 assert(prepareResults.every(result=>result.data.status==='prepared'&&result.data.state.localQuestions.length===result.data.state.originalSequence.length));
+assert(prepareResults.every(result=>result.data.state.originalSequence.length===10&&new Set(result.data.state.localQuestions.map(q=>q.eventId)).size===10));
 const activateResults=await Promise.all(prepareResults.map((prepared,i)=>loginBatch({action:'attempt.activate',payload:{attemptId:prepared.data.attemptId,revision:prepared.data.state.revision},requestId:`activate-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket,token:loginResults[i].data.token})));
 assert.equal(activateResults.filter(result=>!result.ok).length,0);
 clock+=4000;
@@ -96,6 +98,34 @@ const incomplete=await loginBatch({action:'attempt.match.complete',payload:{atte
 assert.equal(incomplete.ok,false);
 const matchDone=await loginBatch({action:'attempt.match.complete',payload:{attemptId:matchActive.data.attemptId,revision:matchActive.data.state.revision,moves:matchMoves},requestId:'match-complete-request',ticket:loginTicket,token:loginResults[0].data.token});
 assert.equal(matchDone.ok,true);assert(['completed','review'].includes(matchDone.data.status));
+
+const requestedIntermediate=QUIZ_BANK50.intermediate.eventMap.map(event=>QUIZ_BANK50.intermediate.questions.find(q=>q.eventId===event.eventId).id);
+const requestedPrepared=await loginBatch({action:'attempt.prepare',payload:{mode:'intermediate',questionIds:requestedIntermediate,restart:true},requestId:'requested-quiz-prepare',ticket:loginTicket,token:loginResults[0].data.token});
+assert.equal(requestedPrepared.ok,true);assert.deepEqual(requestedPrepared.data.state.originalSequence,requestedIntermediate);
+assert.equal(requestedPrepared.data.state.localQuestions.length,10);
+assert(requestedPrepared.data.state.localQuestions.filter(q=>q.image).every(q=>q.prompts[0]===''));
+const requestedActive=await loginBatch({action:'attempt.activate',payload:{attemptId:requestedPrepared.data.attemptId,revision:requestedPrepared.data.state.revision},requestId:'requested-quiz-activate',ticket:loginTicket,token:loginResults[0].data.token});
+const requestedAnswers=new Map(requestedActive.data.state.localQuestions.map(q=>[q.id,q.answers[0]]));
+const requestedComplete=await loginBatch({action:'attempt.quiz.complete',payload:{attemptId:requestedActive.data.attemptId,revision:requestedActive.data.state.revision,submissions:requestedActive.data.state.originalSequence.map(questionId=>({questionId,answer:requestedAnswers.get(questionId)}))},requestId:'requested-quiz-complete',ticket:loginTicket,token:loginResults[0].data.token});
+assert.equal(requestedComplete.ok,true);assert(['completed','review'].includes(requestedComplete.data.status));
+
+let connection=await loginBatch({action:'attempt.prepare',payload:{mode:'connections',variant:'basic',restart:true},requestId:'connection-prepare',ticket:loginTicket,token:loginResults[0].data.token});
+assert.equal(connection.ok,true);assert.equal(connection.data.state.connectionVersion,2);assert.equal(connection.data.state.connectionTotal,5);
+connection=await loginBatch({action:'attempt.activate',payload:{attemptId:connection.data.attemptId,revision:connection.data.state.revision},requestId:'connection-activate',ticket:loginTicket,token:loginResults[0].data.token});
+for(let round=0;round<5;round++){
+  connection=await loginBatch({action:'attempt.board.submit',payload:{attemptId:connection.data.attemptId,revision:connection.data.state.revision,placements:{middle:connection.data.state.connectionRound.middle}},requestId:`connection-round-${round+1}`,ticket:loginTicket,token:loginResults[0].data.token});
+  assert.equal(connection.ok,true);
+}
+assert(['completed','review'].includes(connection.data.status));assert.equal(connection.data.state.connectionDone.length,5);
+let advancedConnection=await loginBatch({action:'attempt.prepare',payload:{mode:'connections',variant:'advanced',restart:true},requestId:'connection-advanced-prepare',ticket:loginTicket,token:loginResults[0].data.token});
+assert.equal(advancedConnection.ok,true);assert.equal(advancedConnection.data.state.connectionTotal,5);
+advancedConnection=await loginBatch({action:'attempt.activate',payload:{attemptId:advancedConnection.data.attemptId,revision:advancedConnection.data.state.revision},requestId:'connection-advanced-activate',ticket:loginTicket,token:loginResults[0].data.token});
+for(let round=0;round<5;round++){
+  const expected=advancedConnection.data.state.connectionRound;
+  advancedConnection=await loginBatch({action:'attempt.board.submit',payload:{attemptId:advancedConnection.data.attemptId,revision:advancedConnection.data.state.revision,placements:{previous:expected.previous,next:expected.next}},requestId:`connection-advanced-round-${round+1}`,ticket:loginTicket,token:loginResults[0].data.token});
+  assert.equal(advancedConnection.ok,true);
+}
+assert(['completed','review'].includes(advancedConnection.data.status));assert.equal(advancedConnection.data.state.connectionDone.length,5);
 const loginStats=loginStore.stats();
 assert(loginStats.loads<=3);
 

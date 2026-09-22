@@ -1,6 +1,6 @@
 {
   "format": "history-full-game-rc-build-v1",
-  "release": "43-speed-20260922a",
+  "release": "43-quiz50-20260923a",
   "configured": true,
   "edgeFunction": "history-rc-api",
   "namespace": "rc-fr42-20260920",
@@ -90,7 +90,7 @@
     "content/us-revolution/images/US-12.png": "5bb79f99597bfcb32a18cdb23539407ccf8f610c59d491966a5d3d45859470b9",
     "copyright-ready.css": "c795e4fc4883b05b7cf79b74ba9d1ba635266e872b0c25200e091edf3b57a991",
     "copyright-ready.js": "f1f7473ec5fb2b4264f9eda3d8cdede6faad5713c0ac0e0a4a85eeb45da0e0fa",
-    "game-api.js": "0e3379d19546ae4f1ca599942fb3a94de6f78a95be433ec7c7af8bdb7bd7831c",
+    "game-api.js": "1a4d2c2ab0808efc2facef228b9ab424eb6c22b58fb81917e3a719b72a52f4a1",
     "glow-v13/glow-crystal-effects.css": "b11f7df6845dee3c413e0e4b90d107ca2ac5424bda2369377bace7c8c457c640",
     "glow-v13/glow-crystal-effects.js": "16c66f6f55084b15130a6fa87cf6d40ef6ec8b0cc0fe38a84ac297100b6e27ae",
     "glow-v13/glow-effects-config.js": "f49020317a571108271325bf4842931de947694be6fa8d84105054720c8f4fed",
@@ -111,7 +111,7 @@
     "history-content.js": "6ce5aeec30175180f7cb311801e2b3df912889fce151c1a97afd1ebd3e24c958",
     "history-game-card.css": "ebfba05ba6fe18bb7a828631c6455a9071223a84084a63b8964d210f70be0808",
     "history-game-card.js": "376e1a89e9e21ace25cd6578ace92d5480326c773a44c12d8da8e9e9b7669287",
-    "index.html": "a07e892a0885f7a4eb09bffce1820a96632c78cb0fb6ecc7466f2c668b8bb84d",
+    "index.html": "732d490d58cfe06141cfcc1dc3d0ad257102176baebb7e851fe4b30fb5ac5b07",
     "integration.css": "0f4661baed5a78edf2efe9ec59974c5379c82c3f8d0459aabfe4faa4a40796bd",
     "integration.js": "a21c07ef32c3667001d7354fd230c127f3c201a4f85727b6984a0f69d24206cb",
     "legacy-game.css": "cb7c454c6f3dbbcf0fbc501bc1aab99bc2cdfc76297aa2f52a39645f0cf907dd",
@@ -119,9 +119,9 @@
     "pack-opening.css": "b4d959ef41eed182fce6577bdab0b3a3d0b84c93d436f7062e285b99cd2eba12",
     "preview-storage.js": "840bad9f6771ab969754f934d782654cdf34651de65fdeb38e92315b337e450c",
     "rc-board.css": "0f06efd0c44191f3f62fb8dec16b04063ba7ef75109de28011fa4455cf129e28",
-    "rc-cinematic.css": "607398a1abf44a8405d38fcb9bda43600d651dff1f54381c0a2cf779f7c602a6",
+    "rc-cinematic.css": "2657e2f40cb7bfc68e568b2d8e7704a614afa47d371145100c045f9539bf0ab4",
     "rc-cinematic.js": "f62aea50166c923f2a4e270fa827e974de7fe32a4c269a21cb5dec2ee374fc9d",
-    "rc-learning.js": "1611fb3b539ba671a5b9107d0d43c2324830cd60f154e90d500616f73932db65",
+    "rc-learning.js": "5fdbee278b200fb331ddff55aaa77020d86f334df5594d1c6d50bd5cf7fc5731",
     "rc-teacher.css": "647d181851a0d9c25da54ce4749a1da504ec7526407f0d29d3ffbb9043cf71db",
     "rc-teacher.js": "ef4a007d46438723e1c4bfb71ca01fb189bed789b932c3143b9d5140b7309000",
     "report-ui27.js": "c47cf1d111a977e71242dcec62d316e0b1cb7c3a8544d4b0209eacb9b21f4f1b",
@@ -130,7 +130,7 @@
     "stage27.css": "730a2964e60ac704a54d613a9494c01e719e4efffa395d2143798b1e0c28179e",
     "stage28.css": "3bdd4e2aaa86961d82cfd092e2f06bc406c4c9bdb8f94d49655044888a9a8fac",
     "stage3.css": "3bd6b17ee997b30fbf44be4fbb72e4292270f6806490d80abd9c60f54a2b6b9c",
-    "student-fast-quiz.js": "a28440ce82473017e616053af4622ed993dd2ed4fd789a3a7d8227ced3eb6157",
+    "student-fast-quiz.js": "61daf466f3f9c44d66f8625953385771f1ab16349b3637edcd233f9d9e532c6f",
     "student-glow-v13.js": "f751fb73be3e61b3d24cede923d48fe6d2a154cc52afc90080a0874d63305da5",
     "student-stage2.js": "31b68bb570c9bcb205916bca17fddc3bc34b8f336b93dd52176091851d9049aa",
     "student-stage25.js": "b068fbbfd96194b107cebdd0dcff16fa4a096613d1e3012b4b1c0dba5a80075b",
@@ -155,6 +155,7 @@
     "teacher.js": "8b86dc5281563ed352fee03f7823666d76f94c0b601bedd415a8c6bff461e105",
     "ui-stage28.js": "afe52bea9dd516dba530e4ac422090281ec469aadea22484826a32c4bf038e89",
     "v42.css": "7e78bd9573c28798cbbb934763f06f70f9a9d8d9e54dd5a4e94cce7fa0037ca0",
-    "student-v43-speed.js": "f2e5e563e9080beed802e74f5c67f34b31a4e59c27ce7f5b82bd1cb44c070cba"
+    "student-v43-speed.js": "a7b61994ab3a466ecdb7a0693d4574aec969f3a35a9022ef75bc685c64661517",
+    "quiz-bank50.js": "31f1c9e4b687d42c17db4417d3fe08493a71c488a7c768795680de5cb3cc2d67"
   }
 }

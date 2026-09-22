@@ -1,6 +1,6 @@
 {
   "format": "history-full-game-rc-build-v1",
-  "release": "42-classroom-20260922",
+  "release": "42-classroom-20260922b",
   "configured": true,
   "edgeFunction": "history-rc-api",
   "namespace": "rc-fr42-20260920",
@@ -111,7 +111,7 @@
     "history-content.js": "6ce5aeec30175180f7cb311801e2b3df912889fce151c1a97afd1ebd3e24c958",
     "history-game-card.css": "ebfba05ba6fe18bb7a828631c6455a9071223a84084a63b8964d210f70be0808",
     "history-game-card.js": "376e1a89e9e21ace25cd6578ace92d5480326c773a44c12d8da8e9e9b7669287",
-    "index.html": "f4cf73b3806bdde6e447acd178ad30a09bfb47d43d52ae68a66931dac1e21f32",
+    "index.html": "201767d3bca4bd5a93ca2d730e22f07d35e312a01dbf1ed5a22cbab086dcf4ac",
     "integration.css": "0f4661baed5a78edf2efe9ec59974c5379c82c3f8d0459aabfe4faa4a40796bd",
     "integration.js": "a21c07ef32c3667001d7354fd230c127f3c201a4f85727b6984a0f69d24206cb",
     "legacy-game.css": "cb7c454c6f3dbbcf0fbc501bc1aab99bc2cdfc76297aa2f52a39645f0cf907dd",

@@ -46,11 +46,39 @@
   text-decoration: none;
 }
 
-.student-excel-box form {
+.student-excel-form {
   display: grid;
   grid-template-columns: minmax(160px, .35fr) minmax(260px, 1fr) auto;
   gap: 12px;
   align-items: end;
+}
+
+.student-import-preview {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid #9f8d6e;
+  border-radius: 8px;
+  background: #f3ead7;
+  color: #263540;
+}
+
+.student-import-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.student-import-counts b {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fffaf0;
+  color: #263540;
+}
+
+.student-import-preview li,
+.student-import-preview summary {
+  color: #263540;
 }
 
 .student-excel-box input {
@@ -69,6 +97,6 @@
 }
 
 @media (max-width: 850px) {
-  .student-excel-box form { grid-template-columns: 1fr; }
+  .student-excel-form { grid-template-columns: 1fr; }
   .student-excel-box button { width: 100%; }
 }

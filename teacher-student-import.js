@@ -2,8 +2,10 @@
 
 const STUDENT_TEMPLATE_URL='assets/templates/student-registration-template.xlsx';
 const STUDENT_IMPORT_LIMIT=100;
+let studentImportPreview=null;
 
-function studentRegistrationPanel(){return`<section class="panel"><h2>학생 등록·학년도 관리</h2><p>학번 5자리와 이름을 붙여 입력하세요. 학번은 학년 1자리, 반 2자리, 번호 2자리 순서입니다.</p><div class="student-import-guide"><strong>직접 입력 예시</strong><code>20401홍길동, 20402김철수</code><small>학생 사이는 쉼표(,) 또는 줄바꿈으로 구분합니다. 기존의 학년,반,번호,이름 형식도 계속 사용할 수 있습니다.</small></div><form onsubmit="addStudents(event)"><label>등록할 학년도<input name="schoolYear" type="number" min="2020" max="2200" value="${year}" required></label><label>학생 명부 (최대 ${STUDENT_IMPORT_LIMIT}명)<textarea name="roster" placeholder="20401홍길동, 20402김철수" required></textarea></label><div class="actions"><button class="primary">학생 등록 및 코드 발급</button>${API.session?.role==='owner'?'<button type="button" onclick="newYear()">새 학년도 설정 만들기</button>':''}</div></form><div class="student-excel-box"><h3>엑셀로 일괄 등록</h3><p>양식을 내려받아 학년·반·번호·이름을 입력하고 저장한 뒤, 그 파일을 선택해 등록하세요.</p><div class="actions"><a class="student-template-button" href="${STUDENT_TEMPLATE_URL}" download="학생등록_양식.xlsx">엑셀 양식 다운로드</a></div><form onsubmit="importStudentsExcel(event)"><label>등록할 학년도<input name="schoolYear" type="number" min="2020" max="2200" value="${year}" required></label><label>작성한 엑셀 파일<input name="studentFile" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required></label><button class="primary">엑셀 명부 등록 및 코드 발급</button></form></div>${created.length?`<div class="warning">이번에 발급된 코드를 저장하세요. 기존 학생의 코드는 조회할 수 없습니다.</div><button onclick="downloadCodes()">발급 명부 다운로드</button><div class="tablewrap"><table><tr><th>학번</th><th>이름</th><th>접속 코드</th></tr>${created.map(x=>`<tr><td>${E(x.student.id)}</td><td>${E(x.student.name)}</td><td class="credential">${E(x.code)}</td></tr>`).join('')}</table></div>`:''}<h3 style="margin-top:24px">등록 학생 ${info.students.length}명</h3><div class="tablewrap"><table><tr><th>학번</th><th>이름</th><th>별명</th></tr>${info.students.map(s=>`<tr><td>${E(s.id)}</td><td>${E(s.name)}</td><td>${E(s.nickname)}</td></tr>`).join('')}</table></div></section>`}
+function importPreviewMarkup(){if(!studentImportPreview)return'';const p=studentImportPreview;return`<section class="student-import-preview" aria-live="polite"><h3>${E(p.fileName)} 검증 결과</h3><div class="student-import-counts"><b>등록 가능 ${p.valid.length}명</b><b>오류 ${p.errors.length}명</b><b>중복 ${p.duplicates.length}명</b></div>${p.errors.length?`<details open><summary>오류 행 확인</summary><ul>${p.errors.slice(0,20).map(x=>`<li>${x.row}행: ${E(x.reason)}</li>`).join('')}</ul></details>`:''}${p.duplicates.length?`<details><summary>중복 행 확인</summary><ul>${p.duplicates.slice(0,20).map(x=>`<li>${x.row}행: ${E(x.label)} · ${E(x.reason)}</li>`).join('')}</ul></details>`:''}<div class="actions"><button type="button" class="primary" onclick="commitStudentsExcel()" ${p.valid.length?'':'disabled'}>정상 ${p.valid.length}명 최종 등록</button><button type="button" onclick="clearStudentImportPreview()">검증 취소</button></div><p class="muted">오류와 중복 학생은 등록하지 않습니다.</p></section>`}
+function studentRegistrationPanel(){return`<section class="panel"><h2>학생 등록·학년도 관리</h2><p>학번 5자리와 이름을 붙여 입력하세요. 학번은 학년 1자리, 반 2자리, 번호 2자리 순서입니다.</p><div class="student-import-guide"><strong>직접 입력 예시</strong><code>20401홍길동, 20402김철수</code><small>학생 사이는 쉼표(,) 또는 줄바꿈으로 구분합니다. 기존의 학년,반,번호,이름 형식도 계속 사용할 수 있습니다.</small></div><form onsubmit="addStudents(event)"><label>등록할 학년도<input name="schoolYear" type="number" min="2020" max="2200" value="${year}" required></label><label>학생 명부 (최대 ${STUDENT_IMPORT_LIMIT}명)<textarea name="roster" placeholder="20401홍길동, 20402김철수" required></textarea></label><div class="actions"><button class="primary">학생 등록 및 코드 발급</button>${API.session?.role==='owner'?'<button type="button" onclick="newYear()">새 학년도 설정 만들기</button>':''}</div></form><div class="student-excel-box"><h3>엑셀로 일괄 등록</h3><p>양식의 예시 행을 지우고 학년·반·번호·이름을 입력한 뒤 저장하세요. 파일 선택 후 정상·오류·중복 행을 먼저 확인합니다.</p><div class="actions"><a class="student-template-button" href="${STUDENT_TEMPLATE_URL}" download="학생등록_양식.xlsx">엑셀 양식 다운로드</a></div><div class="student-excel-form"><label>등록할 학년도<input id="studentExcelYear" type="number" min="2020" max="2200" value="${year}" required></label><label>작성한 엑셀 파일<input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="previewStudentsExcel(event)" required></label></div>${importPreviewMarkup()}</div>${created.length?`<div class="warning">이번에 발급된 코드를 저장하세요. 기존 학생의 코드는 조회할 수 없습니다.</div><button onclick="downloadCodes()">발급 명부 다운로드</button><div class="tablewrap"><table><tr><th>학번</th><th>이름</th><th>접속 코드</th></tr>${created.map(x=>`<tr><td>${E(x.student.id)}</td><td>${E(x.student.name)}</td><td class="credential">${E(x.code)}</td></tr>`).join('')}</table></div>`:''}<h3 style="margin-top:24px">등록 학생 ${info.students.length}명</h3><div class="tablewrap"><table><tr><th>학번</th><th>이름</th><th>별명</th></tr>${info.students.map(s=>`<tr><td>${E(s.id)}</td><td>${E(s.name)}</td><td>${E(s.nickname)}</td></tr>`).join('')}</table></div></section>`}
 
 students=studentRegistrationPanel;
 
@@ -12,18 +14,20 @@ function normalizeStudentRows(rows,schoolYear){
   if(!Number.isInteger(schoolYear)||schoolYear<2020||schoolYear>2200)throw new Error('학년도를 확인해 주세요.');
   if(!rows.length)throw new Error('등록할 학생이 없습니다.');
   if(rows.length>STUDENT_IMPORT_LIMIT)throw new Error(`학생은 한 번에 ${STUDENT_IMPORT_LIMIT}명까지 등록할 수 있습니다.`);
-  const seen=new Set();
-  return rows.map((row,index)=>{
+  const seen=new Set(),normalized=[],duplicates=[];
+  rows.forEach((row,index)=>{
     const grade=Number(row.grade),classNo=Number(row.classNo),number=Number(row.number),name=String(row.name??'').trim();
     if(!Number.isInteger(grade)||grade<1||grade>6)studentRowError('학년은 1~6 사이의 숫자여야 합니다.',index);
     if(!Number.isInteger(classNo)||classNo<1||classNo>99)studentRowError('반은 1~99 사이의 숫자여야 합니다.',index);
     if(!Number.isInteger(number)||number<1||number>99)studentRowError('번호는 1~99 사이의 숫자여야 합니다.',index);
     if(!name||name.length>50)studentRowError('이름을 1~50자로 입력해 주세요.',index);
     const key=`${grade}-${classNo}-${number}`;
-    if(seen.has(key))studentRowError('같은 학년·반·번호가 파일이나 입력란에 두 번 있습니다.',index);
+    if(seen.has(key)){duplicates.push({row:index+1,key});return}
     seen.add(key);
-    return{schoolYear,grade,classNo,number,name,nickname:String(row.nickname??'').trim()||`역사가${number}`};
+    normalized.push({schoolYear,grade,classNo,number,name,nickname:String(row.nickname??'').trim()||`역사가${number}`});
   });
+  normalized.skippedDuplicates=duplicates.length;
+  return normalized;
 }
 
 function parseCompactStudent(token,index){
@@ -46,8 +50,11 @@ function parseStudentRoster(value,schoolYear){
   return normalizeStudentRows(rows,schoolYear);
 }
 
-async function registerStudentRows(rows){created=(await API.request('teacher.student.create',{students:rows})).created;await refresh();msg(`${created.length}명을 등록했습니다. 새 접속 코드는 지금 한 번만 표시됩니다.`)}
-addStudents=function(e){e.preventDefault();let rows;try{const data=new FormData(e.target);rows=parseStudentRoster(data.get('roster'),Number(data.get('schoolYear')))}catch(error){return msg(error.message)}task(()=>registerStudentRows(rows))};
+function studentKey(row){return `${Number(row.grade)}-${Number(row.classNo)}-${Number(row.number)}`}
+function registeredStudentKeys(){return new Set((info?.students||[]).map(studentKey))}
+function omitRegisteredStudents(rows){const existing=registeredStudentKeys(),valid=[],duplicates=[];for(const row of rows){if(existing.has(studentKey(row)))duplicates.push(row);else valid.push(row)}return{valid,duplicates}}
+async function registerStudentRows(rows,skipped=0){const filtered=omitRegisteredStudents(rows);skipped+=filtered.duplicates.length;if(!filtered.valid.length){msg(`등록할 새 학생이 없습니다. 중복 ${skipped}명은 등록하지 않았습니다.`);return}created=(await API.request('teacher.student.create',{students:filtered.valid})).created;await refresh();msg(`${created.length}명을 등록했습니다.${skipped?` 중복 ${skipped}명은 제외했습니다.`:''} 새 접속 코드는 지금 한 번만 표시됩니다.`)}
+addStudents=function(e){e.preventDefault();let rows;try{const data=new FormData(e.target);rows=parseStudentRoster(data.get('roster'),Number(data.get('schoolYear')))}catch(error){return msg(error.message)}task(()=>registerStudentRows(rows,rows.skippedDuplicates||0))};
 
 function readZipUint16(view,offset){return view.getUint16(offset,true)}
 function readZipUint32(view,offset){return view.getUint32(offset,true)}
@@ -104,7 +111,7 @@ function worksheetRows(xml,shared){
   });
 }
 
-async function parseStudentWorkbook(file,schoolYear){
+async function parseStudentWorkbook(file){
   if(!file||!file.name.toLowerCase().endsWith('.xlsx'))throw new Error('.xlsx 형식의 엑셀 파일을 선택해 주세요.');
   if(file.size>2_000_000)throw new Error('엑셀 파일은 2MB 이하로 만들어 주세요.');
   const zip=await unzipXlsx(await file.arrayBuffer());
@@ -119,16 +126,38 @@ async function parseStudentWorkbook(file,schoolYear){
   let headerIndex=-1,columns={};
   for(let i=0;i<Math.min(rows.length,10);i++){const map=Object.fromEntries(rows[i].map((value,column)=>[normalized(value),column]));if(['학년','반','번호','이름'].every(key=>map[key]!==undefined)){headerIndex=i;columns=map;break}}
   if(headerIndex<0)throw new Error('첫 번째 시트에서 학년, 반, 번호, 이름 열을 찾지 못했습니다. 양식을 다시 내려받아 주세요.');
-  const students=rows.slice(headerIndex+1).filter(row=>['학년','반','번호','이름'].some(key=>String(row[columns[key]]??'').trim())).map(row=>({grade:row[columns.학년],classNo:row[columns.반],number:row[columns.번호],name:row[columns.이름]}));
-  return normalizeStudentRows(students,schoolYear);
+  return rows.slice(headerIndex+1).map((row,index)=>({row:headerIndex+index+2,grade:row[columns.학년],classNo:row[columns.반],number:row[columns.번호],name:row[columns.이름]})).filter(row=>['grade','classNo','number','name'].some(key=>String(row[key]??'').trim()));
 }
 
-async function importStudentsExcel(e){
-  e.preventDefault();
-  const form=e.target,file=form.elements.studentFile.files[0],schoolYear=Number(form.elements.schoolYear.value);
-  await task(async()=>{
-    const rows=await parseStudentWorkbook(file,schoolYear),sample=rows.slice(0,6).map(row=>`${row.grade}${String(row.classNo).padStart(2,'0')}${String(row.number).padStart(2,'0')} ${row.name}`).join('\n');
-    if(!confirm(`${rows.length}명을 등록할까요?\n\n${sample}${rows.length>6?'\n외 '+(rows.length-6)+'명':''}`))return;
-    await registerStudentRows(rows);
-  });
+function validateStudentImport(rows,schoolYear,fileName){
+  if(!Number.isInteger(schoolYear)||schoolYear<2020||schoolYear>2200)throw new Error('학년도를 확인해 주세요.');
+  if(!rows.length)throw new Error('엑셀 파일에 등록할 학생이 없습니다.');
+  if(rows.length>STUDENT_IMPORT_LIMIT)throw new Error(`학생은 한 번에 ${STUDENT_IMPORT_LIMIT}명까지 등록할 수 있습니다.`);
+  const existing=registeredStudentKeys(),seen=new Set(),valid=[],errors=[],duplicates=[];
+  for(const source of rows){
+    const row={schoolYear,grade:Number(source.grade),classNo:Number(source.classNo),number:Number(source.number),name:String(source.name??'').trim()};
+    let reason='';
+    if(!Number.isInteger(row.grade)||row.grade<1||row.grade>6)reason='학년은 1~6 사이의 숫자여야 합니다.';
+    else if(!Number.isInteger(row.classNo)||row.classNo<1||row.classNo>99)reason='반은 1~99 사이의 숫자여야 합니다.';
+    else if(!Number.isInteger(row.number)||row.number<1||row.number>99)reason='번호는 1~99 사이의 숫자여야 합니다.';
+    else if(!row.name||row.name.length>50)reason='이름을 1~50자로 입력해 주세요.';
+    else if(row.name.startsWith('예시_')||row.name.includes('(이 행을 지우고 입력)'))reason='양식의 예시 행을 지우고 실제 학생을 입력해 주세요.';
+    if(reason){errors.push({row:source.row,reason});continue}
+    row.nickname=`역사가${row.number}`;const key=studentKey(row),label=`${row.grade}학년 ${row.classNo}반 ${row.number}번 ${row.name}`;
+    if(existing.has(key)){duplicates.push({row:source.row,label,reason:'이미 등록된 학번'});continue}
+    if(seen.has(key)){duplicates.push({row:source.row,label,reason:'파일 안에서 학번 중복'});continue}
+    seen.add(key);valid.push(row);
+  }
+  return{fileName,schoolYear,valid,errors,duplicates};
+}
+async function previewStudentsExcel(e){
+  const file=e.target.files?.[0],schoolYear=Number(document.querySelector('#studentExcelYear')?.value);
+  if(!file)return;
+  await task(async()=>{studentImportPreview=validateStudentImport(await parseStudentWorkbook(file),schoolYear,file.name);render();msg(`검증 완료: 등록 가능 ${studentImportPreview.valid.length}명, 오류 ${studentImportPreview.errors.length}명, 중복 ${studentImportPreview.duplicates.length}명`)});
+}
+function clearStudentImportPreview(){studentImportPreview=null;render()}
+function commitStudentsExcel(){
+  const preview=studentImportPreview;if(!preview?.valid.length)return msg('먼저 엑셀 파일을 선택해 검증해 주세요.');
+  if(!confirm(`정상 ${preview.valid.length}명을 등록할까요? 오류 ${preview.errors.length}명과 중복 ${preview.duplicates.length}명은 제외됩니다.`))return;
+  task(async()=>{studentImportPreview=null;await registerStudentRows(preview.valid,preview.duplicates.length)});
 }

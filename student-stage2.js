@@ -12,7 +12,7 @@ function rewardKey2(m,s={}){return m==='matching'?`matching.${s.variant||matchMo
 function preview2(key,practice=false){const text=state42?.testOnly?'교사 연습모드이므로 기록과 보상이 저장되지 않습니다':practice?'일반 연습모드이므로 기록과 보상이 저장되지 않습니다':state42?.rewardPreviews?.[key]?.description||'서버 보상 설정을 불러오는 중입니다';return `<div class="reward-preview2" role="note">${escape41(text)}</div>`}
 function completionNotice2(a){const r=a?.completionReward||a?.state.rewardResult;if(!r)return'';return `<section class="completion-notice2 ${r.granted?'granted':''}" role="status"><h2>${r.granted?'완료 보상을 확인하세요':'완료 결과'}</h2><p>${escape41(r.message).replaceAll('\n','<br>')}</p><div class="bonus-actions">
  ${r.packs.length&&gate42('collection')?'<button class="btn" onclick="openVault2()">보관함에서 카드팩 열기</button>':''}${r.cards.length&&gate42('collection')?'<button class="btn" onclick="collectionModeV34=\'book\';go(\'collection\')">카드 도감에서 확인</button>':''}
- <button class="btn alt" onclick="retryGame2('${a.mode}')">다시 도전</button><button class="btn alt" onclick="go('${['beginner','intermediate','advanced','challenge'].includes(a.mode)?'results':'bonus'}')">게임 선택으로</button></div></section>`}
+ <button class="btn alt" onclick="retryGame2('${a.mode}')">다시 게임하기</button><button class="btn alt" onclick="go('${['beginner','intermediate','advanced','challenge'].includes(a.mode)?'results':'bonus'}')">나가기</button></div></section>`}
 function openVault2(){collectionModeV34='packs';go('collection');setTimeout(()=>document.querySelector('.pack-vault,.pack-inventory,.packvault38')?.scrollIntoView({behavior:'smooth'}),50)}
 function decorateStage2Body(h){
  if(view==='practice')return preview2('',true)+h;

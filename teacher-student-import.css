@@ -1,0 +1,74 @@
+.student-import-guide,
+.student-excel-box {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #c8b99c;
+  border-radius: 10px;
+  background: #fffaf0;
+  color: #263b43;
+}
+
+.student-import-guide strong,
+.student-import-guide small,
+.student-excel-box h3,
+.student-excel-box p,
+.student-excel-box label {
+  color: #263b43;
+}
+
+.student-import-guide strong,
+.student-import-guide small {
+  display: block;
+}
+
+.student-import-guide code {
+  display: block;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #eee7d6;
+  color: #172d37;
+  font-size: 16px;
+  font-weight: 800;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.student-template-button {
+  display: inline-block;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid #23434b;
+  border-radius: 8px;
+  background: #23434b;
+  color: #fff !important;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.student-excel-box form {
+  display: grid;
+  grid-template-columns: minmax(160px, .35fr) minmax(260px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.student-excel-box input {
+  background: #fff !important;
+  color: #172d37 !important;
+}
+
+/* Light controls always use dark text, including the late-loaded RC theme. */
+.panel .reward-fields25,
+.panel .reward-fields25 label,
+.panel .targetfields,
+.panel .targetfields label,
+.panel .student-import-guide,
+.panel .student-excel-box {
+  color: #263540 !important;
+}
+
+@media (max-width: 850px) {
+  .student-excel-box form { grid-template-columns: 1fr; }
+  .student-excel-box button { width: 100%; }
+}

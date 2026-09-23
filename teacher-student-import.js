@@ -156,6 +156,7 @@ async function previewStudentsExcel(e){
   const file=e.target.files?.[0],schoolYear=Number(document.querySelector('#studentExcelYear')?.value);
   studentImportPreview=null;studentImportResult=null;studentImportYear=schoolYear;
   if(!file){render();return}
+  if(!Number.isInteger(schoolYear)||schoolYear<2020||schoolYear>2200){render();return msg('학년도를 2020~2200 사이에서 확인해 주세요.')}
   await task(async()=>{try{const rows=await parseStudentWorkbook(file),existing=schoolYear===year?registeredStudentKeys():new Set((await API.request('teacher.overview',{schoolYear})).students.map(studentKey));studentImportPreview=validateStudentImport(rows,schoolYear,file.name,existing);render();msg(`검증 완료: 등록 가능 ${studentImportPreview.valid.length}명, 오류 ${studentImportPreview.errors.length}명, 중복 ${studentImportPreview.duplicates.length}명`)}catch(error){render();throw error}});
 }
 function clearStudentImportPreview(){studentImportYear=Number(document.querySelector('#studentExcelYear')?.value)||year;studentImportPreview=null;render()}

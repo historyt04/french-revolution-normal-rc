@@ -1,6 +1,7 @@
 # Supabase 연결 후 서버 개편 체크포인트
 
 ## 상태
+- **후속 상태:** 역할 전환 승인·적용 및 SQL 무결성 검증 결과는 `server-restructure-20260923-role-validation.md` 참조. 아래 내용은 b61648a 당시의 이력이다.
 - 2026-09-23. 기준 커밋은 8e1e26d973000a30e2d09212667c800347f273a7.
 - 작업 브랜치: rc/server-restructure-20260923.
 - 서버 구현 초안 및 격리 DB 적용 완료. **성공한 서버 개편 체크포인트가 아니며, 실제 로그인 시험 전 권한 오류로 중단한 작업 체크포인트**이다.
@@ -18,7 +19,7 @@
 
 ## 적용한 새 DB 구조
 - migration: isolated_normal_rc_student_transactions.
-- SQL 파일: supabase/migrations/20260923030000_isolated_normal_rc.sql.
+- SQL 파일: supabase/migrations/20260923022805_isolated_normal_rc_student_transactions.sql (후속 작업에서 실제 원격 migration 시각으로 파일명 정렬).
 - 별도 스키마 history_v5를 만들고 기존 논리 테이블별 물리 테이블을 분리 유지했다. 학생 소유자 컬럼과 인덱스를 추가했다.
 - 학생·교사 명부 및 교사/게임/미션/보상 등 설정 320행을 새 환경에 복사했다. 학생 39명, 새 완료기록 0개.
 - 동일 복사본을 private settings_checkpoint에도 보관했다. 앱 작업용 역할에는 이 체크포인트 접근 권한을 주지 않았다.
@@ -35,7 +36,7 @@
 | supabase/functions/history-normal-rc-api/index.ts | 새 함수 전용 진입점, DB 연결·트랜잭션, 제한된 작업 역할 전환, 응답 Server-Timing |
 | supabase/functions/_shared/rc-service.mjs | 기존 실행기에 선택적 경량 로그인/분리 rate 설정 추가. 기존 함수 기본 동작은 유지 |
 | supabase/functions/_shared/gas-v6-domain.mjs | 새 서버에서만 로그인 후 출석·전체 상태 계산을 미룰 수 있도록 옵션 추가 |
-| supabase/migrations/20260923030000_isolated_normal_rc.sql | 별도 스키마, 설정 체크포인트, 인덱스·제약·RLS·로드/저장 함수 |
+| supabase/migrations/20260923022805_isolated_normal_rc_student_transactions.sql (후속 작업에서 실제 원격 migration 시각으로 파일명 정렬) | 별도 스키마, 설정 체크포인트, 인덱스·제약·RLS·로드/저장 함수 |
 | docs/pending/enable-normal-rc-worker.sql | 적용 전인 구체적 SET 역할 권한 변경과 되돌리기 SQL |
 
 학생별 트랜잭션은 서로 호환되는 공통 설정 읽기 잠금과 학생별 쓰기 잠금을 사용한다. 교사 동작은 현재 초안에서 공통 배타 잠금으로 일관성을 보장하며, 교사 조회·지급이 학생 요청에 주는 지연은 향후 실제 시험 및 범위 세분화 대상이다.

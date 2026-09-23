@@ -2,6 +2,9 @@ import {execute,gasHash,validateRequest} from './rc-service.mjs';
 import {invariant,digest,sealBackup,openBackup} from './rc-data.mjs';
 
 const staffRoles=new Set(['teacher','owner','teacherTest']);
+// These staff operations only read shared/student data and write their own
+// session, receipt, audit or backup rows. Configuration changes remain exclusive.
+const sharedStaffActions=new Set(['teacher.login','teacher.overview','teacher.student.cards','teacher.records.read','teacher.records.student','teacher.records.settings','teacher.records.csv','teacher.scope.read','teacher.backup.create','teacher.backup.restoreCopy','teacher.test.check','portal.read','access.check','rankings.read','session.logout']);
 const deny=code=>({ok:false,code,message:({AUTH_REQUIRED:'먼저 로그인하세요.',SESSION_EXPIRED:'다시 로그인해 주세요.',FORBIDDEN:'이 기능을 사용할 권한이 없습니다.',BUSY:'잠시 후 같은 요청으로 다시 시도합니다.'})[code]||'서버에서 요청을 확인하지 못했습니다.'});
 const brief=result=>{
  const copy=structuredClone(result);
@@ -24,12 +27,16 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
  return async request=>{
   try{
    validateRequest(request);
+   // Reject unauthenticated malformed traffic before opening a DB connection.
+   const ticket=request.ticket;
+   invariant(ticket&&ticket.expiresAt>=now()&&ticket.expiresAt<=now()+121000&&typeof ticket.nonce==='string'&&ticket.nonce.length<=300&&ticket.signature===hash('ticket:'+ticket.expiresAt+':'+ticket.nonce),'REQUEST_EXPIRED');
+   invariant(typeof request.requestId==='string'&&/^[\w-]{12,100}$/.test(request.requestId),'INVALID_REQUEST');
    for(let retry=0;retry<3;retry++){
     try{return await database.transaction(async tx=>{
-     const p=request.payload||{},login=request.action==='student.login'||request.action==='teacher.login';
+     const p=request.payload||{},login=request.action==='student.login'||request.action==='teacher.login',recovery=request.action==='owner.recover';
      let actor,sessionId='',isStaff=false;
-     if(login){
-      invariant(typeof p.code==='string'&&p.code.length<=150,'INVALID_INPUT');
+     if(login||recovery){
+      if(login)invariant(typeof p.code==='string'&&p.code.length<=150,'INVALID_INPUT');
       if(request.action==='student.login'){
        const legacy=await tx.legacySchool();
        const school=p.schoolId||legacy;
@@ -48,15 +55,12 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
      }
      // Shared configuration lock is compatible across all students. Only staff
      // operations use exclusive mode; no classroom-wide student write lock.
-     await tx.lock(actor,isStaff);
-     const limitIds=[hash('rate:'+sessionId),hash('rate:login:'+ (isStaff?'teacher':'student')+':'+actor)];
-     const tables=await tx.load(actor,sessionId,request.requestId,request.action,isStaff,limitIds);
+     await tx.lock(actor,isStaff&&!sharedStaffActions.has(request.action));
+     const limitIds=[sessionId,sessionId+':openings28','reports27:'+actor,'board27:'+actor,'csv27:'+actor,'test-ready:'+actor,'login:'+(isStaff?'teacher':'student')+':'+actor,...(recovery?['owner-recovery-global','owner-recovery:'+actor]:[])].map(key=>hash('rate:'+key));
+     const tables=await tx.load(actor,sessionId,request.requestId,request.action,isStaff,limitIds,p);
      const fp=digest({action:request.action,payload:p});
      if(login){
-      // Validate ticket even on replay. Login replay is encrypted at rest.
-      const t=request.ticket;
-      invariant(t&&t.expiresAt>=now()&&t.expiresAt<=now()+121000&&t.signature===hash('ticket:'+t.expiresAt+':'+t.nonce),'REQUEST_EXPIRED');
-      invariant(typeof request.requestId==='string'&&/^[\w-]{12,100}$/.test(request.requestId),'INVALID_REQUEST');
+      // The ticket was checked before the transaction. Replay is encrypted at rest.
       const prior=await tx.loginReceipt(actor,request.requestId);
       if(prior){invariant(prior.body_hash===fp,'REQUEST_CONFLICT');return {...openBackup(prior.envelope,backupKey).response,replayed:true};}
      }
@@ -74,7 +78,7 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
    }
   }catch(error){
    // Never log request bodies, SQL parameters, tokens or credentials.
-   console.error(JSON.stringify({event:'normal-rc-error',code:String(error.code||'SERVER_ERROR').slice(0,60),action:request?.action}));
+   if(!['REQUEST_EXPIRED','INVALID_REQUEST','INVALID_INPUT','AUTH_REQUIRED','SESSION_EXPIRED','FORBIDDEN','REQUEST_CONFLICT'].includes(error.code))console.error(JSON.stringify({event:'normal-rc-error',code:String(error.code||'SERVER_ERROR').slice(0,60),action:request?.action}));
    return deny(['40001','40P01','55P03','57014','CONNECTION_CLOSED','CONNECT_TIMEOUT'].includes(error.code)?'BUSY':error.code||'SERVER_ERROR');
   }
  };

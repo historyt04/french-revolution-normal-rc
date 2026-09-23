@@ -27,7 +27,7 @@
   const mode=a.mode,local=clone42(a),now=Date.now();local.status='active';local.startedAt=new Date(now).toISOString();local.serverNow=now;local.state.runningSince=now;
   if(mode==='matching'){local.state.playAt=now+5000;local.state.open=[];local.state.done=[];local.state.moves=0;local.state.mismatchUntil=0}
   applyAttempt42(local);view=mode;if(mode==='matching'){matchGame.localMoves=[];matchGame.activationPending=true}render42();clock();bonusClock();
-  let task;task=api42.request('attempt.activate',{attemptId:a.attemptId,revision:a.state.revision},{maxAttempts:2,timeoutMs:12000}).then(server=>{const live=attempts42[mode];if(live?.attemptId===server.attemptId){live.state.revision=server.state.revision;live.startedAt=server.startedAt;live.expiresAt=server.expiresAt;if(mode==='matching'&&matchGame)matchGame.activationPending=false}return server}).catch(error=>{const live=attempts42[mode];if(live?.attemptId===a.attemptId){delete attempts42[mode];if(mode==='matching')matchGame=null;toast42('게임 시작을 서버에서 확인하지 못했습니다. 다시 시도해 주세요.');render42()}throw error}).finally(()=>{if(activating.get(mode)===task)activating.delete(mode)});
+  let task;task=api42.request('attempt.activate',{attemptId:a.attemptId,revision:a.state.revision},{maxAttempts:5,timeoutMs:20000}).then(server=>{const live=attempts42[mode];if(live?.attemptId===server.attemptId){live.state.revision=server.state.revision;live.startedAt=server.startedAt;live.expiresAt=server.expiresAt;live.activationError=false;if(mode==='matching'&&matchGame)matchGame.activationPending=false}return server}).catch(error=>{const live=attempts42[mode];if(live?.attemptId===a.attemptId)live.activationError=true;throw error}).finally(()=>{if(activating.get(mode)===task)activating.delete(mode)});
   activating.set(mode,task);void task.catch(()=>{});return local;
  }
  async function startPrepared(mode,options={}){const k=key(mode,options);let a=prepared.get(k);if(!a){toast42('게임을 준비하고 있습니다. 잠시만 기다려 주세요.');a=await prepare(mode,options)}if(!a)throw Error('게임을 준비할 수 없습니다. 연결을 확인해 주세요.');prepared.delete(k);return beginPrepared(a)}
@@ -53,8 +53,10 @@
   const local={attemptId,mode,status:'active',startedAt:new Date(now).toISOString(),expiresAt:new Date(now+86400000).toISOString(),serverNow:now,state};applyAttempt42(local);view=mode;render42();clock();bonusClock();registerLocalQuiz(local);return local;
  }
  async function awaitActivation(mode){
-  const task=activating.get(mode);if(task)await task;
-  let a=attempts42[mode];if(a?.activationError||String(a?.attemptId||'').startsWith('local-')){a.activationError=false;await registerLocalQuiz(a);a=attempts42[mode]}
+  const task=activating.get(mode);if(task)try{await task}catch{}
+  let a=attempts42[mode];
+  if(mode==='matching'&&a&&(a.activationError||a.state.revision<1)){const server=await api42.request('attempt.activate',{attemptId:a.attemptId,revision:a.state.revision},{maxAttempts:5,timeoutMs:20000});if(attempts42[mode]?.attemptId===server.attemptId){a=attempts42[mode];a.state.revision=server.state.revision;a.startedAt=server.startedAt;a.expiresAt=server.expiresAt;a.activationError=false;if(matchGame)matchGame.activationPending=false}}
+  else if(a?.activationError||String(a?.attemptId||'').startsWith('local-')){a.activationError=false;await registerLocalQuiz(a);a=attempts42[mode]}
   if(!a||a.status!=='active'||a.state.revision<1){const e=Error('게임 시작 확인이 끝나지 않았습니다. 다시 시도해 주세요.');e.code='ACTIVATION_REQUIRED';throw e}return a;
  }
  const startBase=start;

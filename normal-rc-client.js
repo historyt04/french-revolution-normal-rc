@@ -7,7 +7,7 @@
  const notices=new Map();let retryTimer=null,loading=true;
  const queue=new HistoryNormalOutbox.CompletionQueue({store,owner,request:(...args)=>api42.request(...args),
   onChange(row){notices.set(row.id,row);const a=attempts42[row.mode];if(a?.clientRequestId===row.clientId){a.syncStatus=row.status;a.syncError=row.lastError||'';if(state42)render42()}schedule()},
-  onConfirmed(row,result){const a=attempts42[row.mode];if(a?.clientRequestId===row.clientId){applyState42(result.student);applyAttempt42(result);render42()}else if(state42){void refresh42().then(()=>render42()).catch(()=>{})}}
+  onConfirmed(row,result){const a=attempts42[row.mode];if(!a||a.clientRequestId===row.clientId||a.attemptId===row.active?.attemptId){applyState42(result.student);applyAttempt42(result);render42()}else if(state42){void refresh42().then(()=>render42()).catch(()=>{})}}
  });
  function schedule(){clearTimeout(retryTimer);if(owner()&&[...notices.values()].some(r=>r.owner===owner()&&r.status==='pending'))retryTimer=setTimeout(()=>{void queue.flush().catch(showStorageError)},4000)}
  function showStorageError(){toast42('기기에 완료 기록을 보관하지 못했습니다. 이 화면을 닫지 말고 저장을 다시 시도해 주세요.')}
@@ -36,6 +36,19 @@
   try{await queue.enqueue(input);void queue.flush().catch(showStorageError)}catch{a.unsavedCompletion=input;showStorageError();render42()}
  }
  async function retry(){for(const a of Object.values(attempts42)){if(a.unsavedCompletion){try{await queue.enqueue(a.unsavedCompletion);delete a.unsavedCompletion}catch{showStorageError();return}}}void load()}
+ async function submitDecision(mode,action,payload){
+  const a=attempts42[mode];if(!a||a.status!=='active'||a.syncStatus&&a.syncStatus!=='confirmed')return;
+  const clientId='decision-'+api42.newRequestId();a.clientRequestId=clientId;
+  const input={clientId,mode,action,payload:clone42(payload),active:{attemptId:a.attemptId,revision:a.state.revision}};
+  a.syncStatus='saving';a.status='pending';render42();
+  try{await queue.enqueue(input);void queue.flush().catch(showStorageError)}catch{a.unsavedCompletion=input;showStorageError();render42()}
+ }
+ const checkBase=check;check=function(mode){if(state42?.testOnly)return checkBase(mode);return submitDecision(mode,'attempt.order',{slots:clone42(P[mode].slots)})};
+ const boardBase=submitBoard26;submitBoard26=function(mode){if(state42?.testOnly)return boardBase(mode);return submitDecision(mode,'attempt.board.submit',{placements:clone42(attempts42[mode].state.placements)})};
+ const timedBase=submitTimed26;submitTimed26=function(mode,explicit){if(state42?.testOnly)return timedBase(mode,explicit);const s=gameObject2(mode);if(busy42||!s||s.slots.some(x=>!x)||!explicit&&state42.learning26.submission[mode]!=='auto')return;return submitDecision(mode,'attempt.order',{slots:clone42(s.slots),submission:explicit?'confirm':'auto'})};
+ const faceBase=checkFace;checkFace=function(){if(state42?.testOnly)return faceBase();return submitDecision('faceoff','attempt.order',{slots:clone42(face.board)})};
+ // These submissions may need another answer. Announce receipt, not a passed game.
+ const decisionDecorate=decorateStage2Body;decorateStage2Body=function(html){const a=attempts42[view];let out=decisionDecorate(html);if(a?.clientRequestId?.startsWith('decision-')&&a.syncStatus&&a.syncStatus!=='confirmed')out=out.replace('학습 완료</h2>','답안 제출 완료</h2>').replaceAll('완료 기록','제출 답안');return out};
  window.HistoryNormalCompletion={submitQuiz,submitMatching,retry};
  addEventListener('beforeunload',event=>{if(Object.values(attempts42).some(a=>a.unsavedCompletion||a.syncStatus==='saving')){event.preventDefault();event.returnValue=''}});
  addEventListener('online',()=>void load());addEventListener('history-session-changed',()=>{loading=true;notices.clear();clearTimeout(retryTimer);if(owner())void load()});

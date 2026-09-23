@@ -39,5 +39,14 @@ class Store{
  // A local confirmation write failure causes a replay, not another server effect.
  owner='student-D';let writes=0;const diskQueue=new CompletionQueue({store,owner:()=>owner,request:async(action,payload,opts)=>{const result=await request(action,payload,opts);if(action==='attempt.quiz.complete'&&writes++===0)store.failNext=true;return result}});
  await diskQueue.enqueue({...input,clientId:'confirm-disk-failure'});await diskQueue.flush();assert.equal((await diskQueue.rows())[0].status,'pending');const before=effects;await diskQueue.flush();assert.equal(effects,before);assert.equal((await diskQueue.rows())[0].status,'confirmed');
- console.log('PASS: response loss, page reload, session isolation, ID conflicts, local write failure, terminal transcript retention, confirmation replay');
+ // A pack request is durable across logout/relogin and a response lost after commit.
+ owner='pack-owner';let packEffects=0,packLost=true,openingId;const packReceipts=new Map();
+ const packRequest=async(action,payload,opts)=>{assert.equal(action,'cards.openPack');assert.deepEqual(payload,{packId:'basic',count:3});if(packReceipts.has(opts.requestId))return packReceipts.get(opts.requestId);packEffects++;const out={opening:{id:'opening-once'},cards:[1,2,3]};packReceipts.set(opts.requestId,out);if(packLost){packLost=false;throw Error('response lost')}return out};
+ const packOptions={store,owner:()=>owner,request:packRequest,onConfirmed:(_,r)=>{openingId=r.opening.id}};
+ let packs=new CompletionQueue(packOptions);await packs.enqueue({clientId:'durable-pack-id',mode:'pack',direct:true,action:'cards.openPack',payload:{packId:'basic',count:3}});await packs.flush();assert.equal(packEffects,1);
+ owner='other-pack-owner';await packs.flush();assert.equal(packEffects,1);owner='pack-owner';packs=new CompletionQueue(packOptions);await packs.flush();assert.equal(packEffects,1);assert.equal(openingId,'opening-once');assert.equal((await packs.rows())[0].openingId,openingId);
+ // Server judgement can return an active attempt after an incorrect arrangement.
+ owner='decision-owner';let decision;const decisions=new CompletionQueue({store,owner:()=>owner,request:async()=>({attemptId:'order-attempt',mode:'speedrun',status:'active',state:{revision:2}}),onConfirmed:(_,r)=>{decision=r}});
+ await decisions.enqueue({clientId:'order-submission',mode:'speedrun',action:'attempt.order',active:{attemptId:'order-attempt',revision:1},payload:{slots:[2,1]}});await decisions.flush();assert.equal(decision.status,'active');assert.equal((await decisions.rows())[0].status,'confirmed');
+ console.log('PASS: response loss, page reload, session isolation, ID conflicts, local write failure, terminal transcript retention, confirmation replay, durable pack opening, active judgement response');
 })().catch(e=>{console.error(e);process.exitCode=1});

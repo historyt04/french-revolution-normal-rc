@@ -20,10 +20,10 @@
     let active=row.active;
     if(row.prepare){const ready=await call('attempt.prepare',row.prepare,'prepare');active=await call('attempt.activate',{attemptId:ready.attemptId,revision:ready.state.revision},'activate')}
     else if(row.activation)active=await call('attempt.activate',row.activation,'activate');
-    if(!active?.attemptId)throw Object.assign(Error('INVALID_LOCAL_RECORD'),{code:'INVALID_LOCAL_RECORD'});
-    const result=await call(row.action,{attemptId:active.attemptId,revision:active.state?.revision??active.revision,...row.payload},'complete');
+    if(!row.direct&&!active?.attemptId)throw Object.assign(Error('INVALID_LOCAL_RECORD'),{code:'INVALID_LOCAL_RECORD'});
+    const result=await call(row.action,row.direct?row.payload:{attemptId:active.attemptId,revision:active.state?.revision??active.revision,...row.payload},'complete');
     // Commit confirmation before notifying UI. Never retain the response's full student state.
-    const confirmed={id:row.id,owner,clientId:row.clientId,fingerprint:row.fingerprint,mode:row.mode,status:'confirmed',createdAt:row.createdAt,confirmedAt:Date.now(),serverAttemptId:result.attemptId};
+    const confirmed={id:row.id,owner,clientId:row.clientId,fingerprint:row.fingerprint,mode:row.mode,status:'confirmed',createdAt:row.createdAt,confirmedAt:Date.now(),serverAttemptId:result.attemptId,openingId:result.opening?.id};
     await this.store.put(confirmed);this.onChange(confirmed);if(this.owner()===owner)await this.onConfirmed(row,result);
    }catch(error){const next={...row,retries:row.retries+1,lastError:error.code||'CONNECTION_ERROR',status:!error.code||retryable.has(error.code)?'pending':'blocked'};const saved=await this.store.put(next);this.onChange(saved);break}
   }}

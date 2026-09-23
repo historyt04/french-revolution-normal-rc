@@ -2,7 +2,7 @@
 (function(){'use strict';
  if(!window.HistoryNormalOutbox)return;
  const namespace=HISTORY_API_CONFIG.rcUrl+'|'+HISTORY_API_CONFIG.rcStorageScope;
- const owner=()=>api42.session?.role==='student'&&!state42?.testOnly&&state42?.profile?.id===api42.session?.user?.id?namespace+'|'+api42.session.user.id:null;
+ const owner=()=>{const id=api42.session?.user?.id;return id&&api42.session?.role==='student'&&!api42.session?.testOnly&&!state42?.testOnly&&state42?.profile?.id===id?namespace+'|'+id:null};
  const store=new HistoryNormalOutbox.IndexedCompletionStore('history-normal-completions-v1');
  const notices=new Map();let retryTimer=null,loading=true;
  const queue=new HistoryNormalOutbox.CompletionQueue({store,owner,request:(...args)=>api42.request(...args),

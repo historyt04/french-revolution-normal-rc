@@ -27,8 +27,11 @@ for(const question of ADVANCED_QUESTIONS){
 
 const studentRuntime=readFileSync(new URL('../student-v42.js',import.meta.url),'utf8');
 const fastQuiz=readFileSync(new URL('../student-fast-quiz.js',import.meta.url),'utf8');
+const normalClient=readFileSync(new URL('../normal-rc-client.js',import.meta.url),'utf8');
 assert(studentRuntime.includes("['beginner','intermediate','advanced'].includes(view)?quiz(view)"));
 assert(fastQuiz.includes("new Set(['beginner','intermediate','advanced'])"));
 assert(fastQuiz.includes('교과서용 사건 삽화'));
+assert(normalClient.includes('const id=api42.session?.user?.id'));
+assert(normalClient.includes('!api42.session?.testOnly'));
 
 console.log('PASS: curriculum ownership, 12 advanced five-choice questions, answer keys/explanations, image assets, and advanced quiz routing.');

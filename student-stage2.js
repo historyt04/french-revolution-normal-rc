@@ -14,6 +14,7 @@ function completionNotice2(a){const r=a?.completionReward||a?.state.rewardResult
  ${r.packs.length&&gate42('collection')?'<button class="btn" onclick="openVault2()">보관함에서 카드팩 열기</button>':''}${r.cards.length&&gate42('collection')?'<button class="btn" onclick="collectionModeV34=\'book\';go(\'collection\')">카드 도감에서 확인</button>':''}
  <button class="btn alt" onclick="retryGame2('${a.mode}')">다시 게임하기</button><button class="btn alt" onclick="go('${['beginner','intermediate','advanced','challenge'].includes(a.mode)?'results':'bonus'}')">나가기</button></div></section>`}
 function openVault2(){collectionModeV34='packs';go('collection');setTimeout(()=>document.querySelector('.pack-vault,.pack-inventory,.packvault38')?.scrollIntoView({behavior:'smooth'}),50)}
+function quizResultTotal2(a){const s=a.state;return s.originalSequence?.length||s.sequence?.length||(s.v26?12:a.mode==='beginner'?11:12)}
 function decorateStage2Body(h){
  if(view==='practice')return preview2('',true)+h;
  if(!modes2.includes(view))return h;
@@ -23,7 +24,7 @@ function decorateStage2Body(h){
  h=h.replaceAll('bait=null;go(\'bonus\')',"stopGame2('baitrun')").replaceAll('face=null;go(\'bonus\')',"stopGame2('faceoff')").replaceAll('matchGame=null;go(\'bonus\')',"stopGame2('matching')");
  if(s?.practice)h=h.replace('페이스오프 · 공식','페이스오프 · 연습').replaceAll('<span class="officialtag">공식</span>','<span class="casualtag">연습</span>');
  else h=h.replaceAll('<span class="casualtag">연습</span>','<span class="casualtag">비공식</span>');
- if(a&&['completed','review'].includes(a.status)){const x=a.state,record=a.status==='review'?'검토 필요 기록':x.practice?'연습 완료 · 학생 기록 미저장':x.official?'공식 기록':'완료 · 비공식 기록';return `<section class="shell quiz center"><h2>${label2[a.mode]} 완료</h2><p>${record} · ${precise(x.finishedMs||0)}</p>${a.mode==='matching'?`<p>${x.variant==='basic'?'기본모드':'고급모드'} · ${x.setCount}세트 · ${x.moves}번 뒤집기</p>`:''}${['beginner','intermediate'].includes(a.mode)?`<p>첫 입력 정답 ${x.first}/${a.mode==='beginner'?11:12} · 힌트 ${x.hints}회</p>`:''}</section>`+completionNotice2(a)}
+ if(a&&['completed','review'].includes(a.status)){const x=a.state,record=a.status==='review'?'검토 필요 기록':x.practice?'연습 완료 · 학생 기록 미저장':x.official?'공식 기록':'완료 · 비공식 기록';return `<section class="shell quiz center"><h2>${label2[a.mode]} 완료</h2><p>${record} · ${precise(x.finishedMs||0)}</p>${a.mode==='matching'?`<p>${x.variant==='basic'?'기본모드':'고급모드'} · ${x.setCount}세트 · ${x.moves}번 뒤집기</p>`:''}${['beginner','intermediate'].includes(a.mode)?`<p>첫 입력 정답 ${x.first}/${quizResultTotal2(a)} · 힌트 ${x.hints}회</p>`:''}</section>`+completionNotice2(a)}
  if(s?.status==='completed')h+=`<div class="bonus-actions"><button class="btn" onclick="retryGame2('${view}')">다시 도전</button></div>`;
  const resume='';
  const title=s?.resumedPractice?'<p class="practice-badge2">재개한 연습 기록 · 공식 기록·보상 없음</p>':s?.practice?`<p class="practice-badge2">${state42.testOnly?'교사':'일반'} 연습모드</p>`:'';

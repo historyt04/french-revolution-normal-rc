@@ -98,9 +98,32 @@ success(await service(req('student.records.read',{},student1.token)));
 const samePack=req('cards.openPack',{packId:'basic',count:1},student1.token),beforeOpen=packCount();
 const simultaneous=await Promise.all([service(samePack),service(samePack),service(samePack)]);simultaneous.forEach(success);assert.equal(packCount(),beforeOpen-1);assert.equal(simultaneous.filter(r=>r.replayed).length,2);
 const teacher=success(await service(req('teacher.login',{schoolYear:2026,loginId:'fixture-teacher',code:'local-only-credential'})));
+const missionOverview=success(await service(req('teacher.overview',{schoolYear:2026},teacher.token)));
+const studentMissionsBefore=success(await service(req('student.state',{},student1.token))).missions.map(x=>x.id).sort();
+const missionDraft=structuredClone(missionOverview.missions25.program.draft);missionDraft[0]={...missionDraft[0],active:true,title:'RC 초안 저장 검증',games:['beginner']};
+success(await service(req('teacher.missions.save',{schoolYear:2026,missions:missionDraft},teacher.token)));
+assert.deepEqual(success(await service(req('student.state',{},student1.token))).missions.map(x=>x.id).sort(),studentMissionsBefore,'saving a draft must not change the active student mission run');
+success(await service(req('teacher.missions.control',{schoolYear:2026,action:'start',confirmed:true},teacher.token)));
+const studentMissionsAfter=success(await service(req('student.state',{},student1.token))).missions;assert.equal(studentMissionsAfter.length,1);assert.equal(studentMissionsAfter[0].title,'RC 초안 저장 검증');
+const directGift=success(await service(req('teacher.gift',{scope:'student',studentId:student1.user.id,schoolYear:2026,grade:2,classNo:98,unitId:rules.unitId,kind:'card',eventId:14,rarity:'myth',count:1,form:'normal',effect:'auto',effectPolicy:'missing',duplicate:'allow',unowned:false,reason:'NEW result regression'},teacher.token)));
+assert.equal(directGift.results[0].cards.length,1);const giftOpening=tables.packOpenings28.find(x=>x.studentId===student1.user.id&&x.source==='teacherGift');assert(giftOpening);assert.deepEqual(giftOpening.cards,directGift.results[0].cards,'teacher gift result must preserve the server NEW decision');
+// Stable legacy IDs now represent server-enforced guarantee distributions, and fixed
+// guarantee packs do not consume the probability-pack pity counter.
+assert.deepEqual(rules.packs.find(x=>x.id==='rare').odds,{normal:0,rare:80,unique:15,legend:4,myth:1});
+assert.deepEqual(rules.packs.find(x=>x.id==='unique').odds,{normal:0,rare:0,unique:85,legend:13,myth:2});
+assert.deepEqual(rules.packs.find(x=>x.id==='legend').odds,{normal:0,rare:0,unique:0,legend:95,myth:5});
+const rarityOrder=['normal','rare','unique','legend','myth'];
+for(const [packId,minimum] of [['normal','normal'],['rare','rare'],['unique','unique'],['legend','legend'],['myth','myth']]){
+ success(await service(req('teacher.gift',{scope:'student',studentId:student1.user.id,schoolYear:2026,grade:2,classNo:98,unitId:rules.unitId,kind:'pack',packId,count:1,reason:'guarantee regression'},teacher.token)));
+ const pityBefore=structuredClone(tables.pity.find(x=>x.studentId===student1.user.id)?.state||null);
+ const result=success(await service(req('cards.openPack',{packId,count:1},student1.token)));
+ assert(rarityOrder.indexOf(result.cards[0].rarity)>=rarityOrder.indexOf(minimum),`${packId} must enforce its server minimum rarity`);
+ assert.deepEqual(tables.pity.find(x=>x.studentId===student1.user.id)?.state||null,pityBefore,'guarantee packs must not change probability-pack pity');
+}
 const create=req('teacher.student.create',{students:Array.from({length:30},(_,i)=>({schoolYear:2026,grade:2,classNo:98,number:i+10,name:`Local fixture ${i+10}`}))},teacher.token);
 const created=success(await service(create));assert.equal(created.created.length,30);assert.equal(tables.students.length,32);
 assert((await service(create)).replayed);assert.equal(tables.students.length,32);
-success(await service(req('session.logout',{},student1.token)));assert.equal((await service(req('student.state',{},student1.token))).code,'SESSION_EXPIRED');
-const relogin=success(await service(loginRequest(1))),persisted=success(await service(req('student.state',{},relogin.token)));assert(persisted.completed.beginner);assert(persisted.cards.length>0);assert.equal(tables.records.length,afterCompletion);
-console.log('PASS: minimal login/replay; student boundaries; attendance; completion rollback and two replay paths; pack atomic replay/conflict; opening/report rate partitions; 30-row teacher registration; logout/relogin persistence. In-memory adapter, NOT a hosted load benchmark.');
+const beforeRotate={records:tables.records.filter(x=>x.studentId===student1.user.id).length,cards:tables.cards.filter(x=>x.studentId===student1.user.id).reduce((n,x)=>n+x.count,0)};
+const rotated=success(await service(req('teacher.student.code.rotate',{studentId:student1.user.id,reason:'forgotten code regression',confirmed:true},teacher.token)));assert.match(rotated.code,/^\d{5}$/);assert.equal((await service(req('student.state',{},student1.token))).code,'SESSION_EXPIRED');
+const relogin=success(await service(req('student.login',{schoolId:'school-01',schoolYear:2026,grade:2,classNo:98,number:1,code:rotated.code}))),persisted=success(await service(req('student.state',{},relogin.token)));assert(persisted.completed.beginner);assert(persisted.cards.length>0);assert.equal(tables.records.filter(x=>x.studentId===student1.user.id).length,beforeRotate.records);assert.equal(tables.cards.filter(x=>x.studentId===student1.user.id).reduce((n,x)=>n+x.count,0),beforeRotate.cards);
+console.log('PASS: minimal login/replay; student boundaries; attendance; completion rollback and two replay paths; pack atomic replay/conflict and guarantee rules; opening/report rate partitions; 30-row teacher registration; code rotation with record persistence. In-memory adapter, NOT a hosted load benchmark.');

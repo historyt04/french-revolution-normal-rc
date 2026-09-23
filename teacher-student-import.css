@@ -100,3 +100,5 @@
   .student-excel-form { grid-template-columns: 1fr; }
   .student-excel-box button { width: 100%; }
 }
+
+.student-roster-filters{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}.student-roster-filters label{min-width:140px}.student-row-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.student-row-actions button,.student-row-code button{font-size:12px;padding:5px 8px}.student-row-code{padding:6px;background:#f3efdf;border-radius:6px}.student-row-code strong{display:block}.student-row-code .credential{font-size:17px}

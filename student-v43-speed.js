@@ -27,13 +27,13 @@
   const mode=a.mode,local=clone42(a),now=Date.now();local.status='active';local.startedAt=new Date(now).toISOString();local.serverNow=now;local.state.runningSince=now;
   if(mode==='matching'){local.state.playAt=now+5000;local.state.open=[];local.state.done=[];local.state.moves=0;local.state.mismatchUntil=0}
   applyAttempt42(local);view=mode;if(mode==='matching'){matchGame.localMoves=[];matchGame.activationPending=true}render42();clock();bonusClock();
-  const task=api42.request('attempt.activate',{attemptId:a.attemptId,revision:a.state.revision},{maxAttempts:2,timeoutMs:12000}).then(server=>{const live=attempts42[mode];if(live?.attemptId===server.attemptId){live.state.revision=server.state.revision;live.startedAt=server.startedAt;live.expiresAt=server.expiresAt;if(mode==='matching'&&matchGame)matchGame.activationPending=false}return server}).catch(error=>{const live=attempts42[mode];if(live?.attemptId===a.attemptId){delete attempts42[mode];if(mode==='matching')matchGame=null;toast42('게임 시작을 서버에서 확인하지 못했습니다. 다시 시도해 주세요.');render42()}throw error}).finally(()=>activating.delete(mode));
+  let task;task=api42.request('attempt.activate',{attemptId:a.attemptId,revision:a.state.revision},{maxAttempts:2,timeoutMs:12000}).then(server=>{const live=attempts42[mode];if(live?.attemptId===server.attemptId){live.state.revision=server.state.revision;live.startedAt=server.startedAt;live.expiresAt=server.expiresAt;if(mode==='matching'&&matchGame)matchGame.activationPending=false}return server}).catch(error=>{const live=attempts42[mode];if(live?.attemptId===a.attemptId){delete attempts42[mode];if(mode==='matching')matchGame=null;toast42('게임 시작을 서버에서 확인하지 못했습니다. 다시 시도해 주세요.');render42()}throw error}).finally(()=>{if(activating.get(mode)===task)activating.delete(mode)});
   activating.set(mode,task);void task.catch(()=>{});return local;
  }
  async function startPrepared(mode,options={}){const k=key(mode,options);let a=prepared.get(k);if(!a){toast42('게임을 준비하고 있습니다. 잠시만 기다려 주세요.');a=await prepare(mode,options)}if(!a)throw Error('게임을 준비할 수 없습니다. 연결을 확인해 주세요.');prepared.delete(k);return beginPrepared(a)}
  function localQuizQuestions(mode){
   const source=window.FR42QuizBank50?.[mode];if(!source?.questions||!source?.eventMap)throw Error('최종 문제은행을 불러오지 못했습니다. 화면을 새로고침해 주세요.');
-  return source.eventMap.map(event=>{const choices=source.questions.filter(q=>q.eventId===event.eventId),q=choices[Math.floor(Math.random()*choices.length)],type=choices.indexOf(q)+1;return{id:q.id,eventId:q.eventId,type,prompts:[q.imageUsed?'':q.prompt],answers:q.acceptedAnswers.slice(),answerLabel:q.answerTitle,image:q.imageUsed?(q.image||event.image):null,hints:[q.round2Hint,q.round3Hint]}}).sort(()=>Math.random()-.5);
+  return source.eventMap.map(event=>{const choices=source.questions.filter(q=>q.eventId===event.eventId),q=choices[Math.floor(Math.random()*choices.length)],type=choices.indexOf(q)+1;return{id:q.id,eventId:q.eventId,type,prompts:[q.prompt],answers:q.acceptedAnswers.slice(),answerLabel:q.answerTitle,image:q.imageUsed?(q.image||event.image):null,hints:[q.round2Hint,q.round3Hint]}}).sort(()=>Math.random()-.5);
  }
  function registerLocalQuiz(local){
   const mode=local.mode,questionIds=local.state.originalSequence.slice(),tempId=local.attemptId;
@@ -61,26 +61,30 @@
  start=function(mode){if(!quizModes.has(mode))return startBase(mode);if(activating.has(mode)||attempts42[mode]?.status==='active')return;try{return startLocalQuiz(mode)}catch(error){toast42(error.message)}};
  const startMatchingBase=startMatching;
  startMatching=function(variant=matchMode2,setCount=matchSets2){if(activating.has('matching'))return;void warmMatchingAssets();const options={variant,setCount},a=prepared.get(key('matching',options));return a?startPrepared('matching',options):run42(()=>startPrepared('matching',options))};
+ const retryGameBase43=retryGame2;
+ retryGame2=function(mode){if(mode!=='matching')return retryGameBase43(mode);const s=attempts42.matching?.state||matchGame||{},options={variant:s.variant||matchMode2,setCount:s.setCount||matchSets2};return prepared.has(key('matching',options))?startPrepared('matching',options):run42(()=>startPrepared('matching',options))};
+ const bonusNowBase43=bonusNow;
+ bonusNow=function(s){return s===matchGame&&s?.submitting?Number(s.finishedMs)||0:bonusNowBase43(s)};
  const flipBase=flipMatch;
  flipMatch=function(index){
   if(!matchGame?.cards?.every(c=>c.matchKey))return flipBase(index);
   if(matchGame.preview||matchGame.submitting||matchGame.done.includes(index)||matchGame.open.includes(index)||matchGame.lock)return;
   matchGame.open.push(index);if(matchGame.open.length===1){render42();return}
   const [first,second]=matchGame.open;matchGame.lock=true;matchGame.moves++;matchGame.localMoves.push({first,second});const same=matchGame.cards[first].matchKey===matchGame.cards[second].matchKey;
-  if(same){matchGame.done.push(first,second);matchGame.open=[];matchGame.lock=false;render42();if(matchGame.done.length===matchGame.cards.length){matchGame.submitting=true;run42(async()=>{await awaitActivation('matching');const out=await api42.request('attempt.match.complete',payload42('matching',{moves:matchGame.localMoves}));applyState42(out.student);applyAttempt42(out);render42()})}return}
+  if(same){matchGame.done.push(first,second);matchGame.open=[];matchGame.lock=false;if(matchGame.done.length===matchGame.cards.length){const completed=matchGame,options={variant:completed.variant,setCount:completed.setCount};completed.finishedMs=bonusNowBase43(completed);completed.submitting=true;render42();run42(async()=>{await awaitActivation('matching');const out=await api42.request('attempt.match.complete',payload42('matching',{moves:completed.localMoves}));applyState42(out.student);applyAttempt42(out);render42();void prepare('matching',options).catch(()=>{})});return}render42();return}
   render42();const current=matchGame;setTimeout(()=>{if(matchGame===current&&!current.submitting){current.open=[];current.lock=false;render42()}},700);
  };
  const stopGameBase43=stopGame2;
  stopGame2=function(mode,nextView){
-  if(!quizModes.has(mode))return stopGameBase43(mode,nextView);
+  if(!quizModes.has(mode)&&mode!=='matching')return stopGameBase43(mode,nextView);
   const current=active2(mode);if(!current)return;
   if(!confirm('현재 진행은 저장되지 않습니다. 게임을 중단할까요?'))return;
   const tempId=current.attemptId,pendingActivation=activating.get(mode);
   cancelledQuizAttempts.add(tempId);
-  if(pendingActivation){activating.delete(mode);void pendingActivation.finally(()=>cancelledQuizAttempts.delete(tempId)).catch(()=>{})}
+  if(pendingActivation){activating.delete(mode);const cleanup=mode==='matching'?pendingActivation.then(abandonQuizAttempt):pendingActivation;void cleanup.finally(()=>cancelledQuizAttempts.delete(tempId)).catch(()=>{})}
   else{void abandonQuizAttempt(current);cancelledQuizAttempts.delete(tempId)}
   delete attempts42[mode];if(Array.isArray(state42?.pendingAttempts))state42.pendingAttempts=state42.pendingAttempts.filter(x=>x.mode!==mode&&x.attemptId!==tempId);
-  P[mode]=freshQ(mode);stage2Dialog=null;view=nextView||'results';render42();clock();bonusClock();
+  if(quizModes.has(mode))P[mode]=freshQ(mode);else matchGame=null;stage2Dialog=null;view=nextView||(quizModes.has(mode)?'results':'bonus');render42();clock();bonusClock();
  };
  window.HistoryV43Speed={prepare,awaitActivation};
  const logoutBase=logout42;logout42=async function(){prepared.clear();preparing.clear();activating.clear();ownerToken='';return logoutBase()};

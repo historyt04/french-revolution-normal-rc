@@ -1,6 +1,6 @@
 {
   "format": "history-full-game-rc-build-v1",
-  "release": "43-quiz50-20260923b",
+  "release": "43-flow-20260923c",
   "configured": true,
   "edgeFunction": "history-rc-api",
   "namespace": "rc-fr42-20260920",
@@ -111,7 +111,7 @@
     "history-content.js": "6ce5aeec30175180f7cb311801e2b3df912889fce151c1a97afd1ebd3e24c958",
     "history-game-card.css": "ebfba05ba6fe18bb7a828631c6455a9071223a84084a63b8964d210f70be0808",
     "history-game-card.js": "376e1a89e9e21ace25cd6578ace92d5480326c773a44c12d8da8e9e9b7669287",
-    "index.html": "74a6924265e9c6ce9998f67fb3216de0103fc9e72e109d8e232524673bdb0c1e",
+    "index.html": "9bebd5d4cd780ccb8dd345a330df9ccaeb32e091e7370f757e89ded303edff9b",
     "integration.css": "0f4661baed5a78edf2efe9ec59974c5379c82c3f8d0459aabfe4faa4a40796bd",
     "integration.js": "a21c07ef32c3667001d7354fd230c127f3c201a4f85727b6984a0f69d24206cb",
     "legacy-game.css": "cb7c454c6f3dbbcf0fbc501bc1aab99bc2cdfc76297aa2f52a39645f0cf907dd",
@@ -121,7 +121,7 @@
     "rc-board.css": "0f06efd0c44191f3f62fb8dec16b04063ba7ef75109de28011fa4455cf129e28",
     "rc-cinematic.css": "2657e2f40cb7bfc68e568b2d8e7704a614afa47d371145100c045f9539bf0ab4",
     "rc-cinematic.js": "f62aea50166c923f2a4e270fa827e974de7fe32a4c269a21cb5dec2ee374fc9d",
-    "rc-learning.js": "5fdbee278b200fb331ddff55aaa77020d86f334df5594d1c6d50bd5cf7fc5731",
+    "rc-learning.js": "a34d3ddf60b0d1925314a8677042de8bea953adaa253a2787ebc1d527406bc30",
     "rc-teacher.css": "647d181851a0d9c25da54ce4749a1da504ec7526407f0d29d3ffbb9043cf71db",
     "rc-teacher.js": "ef4a007d46438723e1c4bfb71ca01fb189bed789b932c3143b9d5140b7309000",
     "report-ui27.js": "c47cf1d111a977e71242dcec62d316e0b1cb7c3a8544d4b0209eacb9b21f4f1b",
@@ -130,7 +130,7 @@
     "stage27.css": "730a2964e60ac704a54d613a9494c01e719e4efffa395d2143798b1e0c28179e",
     "stage28.css": "3bdd4e2aaa86961d82cfd092e2f06bc406c4c9bdb8f94d49655044888a9a8fac",
     "stage3.css": "3bd6b17ee997b30fbf44be4fbb72e4292270f6806490d80abd9c60f54a2b6b9c",
-    "student-fast-quiz.js": "61daf466f3f9c44d66f8625953385771f1ab16349b3637edcd233f9d9e532c6f",
+    "student-fast-quiz.js": "f6f4da68ca7e575087ee4b3b8cc4138aa4b0bc08453c48efc8c6a38b127fa015",
     "student-glow-v13.js": "f751fb73be3e61b3d24cede923d48fe6d2a154cc52afc90080a0874d63305da5",
     "student-stage2.js": "31b68bb570c9bcb205916bca17fddc3bc34b8f336b93dd52176091851d9049aa",
     "student-stage25.js": "b068fbbfd96194b107cebdd0dcff16fa4a096613d1e3012b4b1c0dba5a80075b",
@@ -155,7 +155,7 @@
     "teacher.js": "8b86dc5281563ed352fee03f7823666d76f94c0b601bedd415a8c6bff461e105",
     "ui-stage28.js": "afe52bea9dd516dba530e4ac422090281ec469aadea22484826a32c4bf038e89",
     "v42.css": "7e78bd9573c28798cbbb934763f06f70f9a9d8d9e54dd5a4e94cce7fa0037ca0",
-    "student-v43-speed.js": "20b40ab1dfcfe9bc7a1c0491a6d761daa6f2556e66ee37d739ea1f3629eedecd",
+    "student-v43-speed.js": "6f07eda843c62de0e3eab01ad5dead790670a23b74d9d8434cc900550a67b733",
     "quiz-bank50.js": "31f1c9e4b687d42c17db4417d3fe08493a71c488a7c768795680de5cb3cc2d67"
   }
 }

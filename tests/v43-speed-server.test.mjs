@@ -103,7 +103,7 @@ const requestedIntermediate=QUIZ_BANK50.intermediate.eventMap.map(event=>QUIZ_BA
 const requestedPrepared=await loginBatch({action:'attempt.prepare',payload:{mode:'intermediate',questionIds:requestedIntermediate,restart:true},requestId:'requested-quiz-prepare',ticket:loginTicket,token:loginResults[0].data.token});
 assert.equal(requestedPrepared.ok,true);assert.deepEqual(requestedPrepared.data.state.originalSequence,requestedIntermediate);
 assert.equal(requestedPrepared.data.state.localQuestions.length,10);
-assert(requestedPrepared.data.state.localQuestions.filter(q=>q.image).every(q=>q.prompts[0]===''));
+assert(requestedPrepared.data.state.localQuestions.filter(q=>q.image).every(q=>q.prompts[0]&&q.prompts[0]!=='그림에 해당하는 사건은?'));
 const requestedActive=await loginBatch({action:'attempt.activate',payload:{attemptId:requestedPrepared.data.attemptId,revision:requestedPrepared.data.state.revision},requestId:'requested-quiz-activate',ticket:loginTicket,token:loginResults[0].data.token});
 const requestedAnswers=new Map(requestedActive.data.state.localQuestions.map(q=>[q.id,q.answers[0]]));
 const requestedComplete=await loginBatch({action:'attempt.quiz.complete',payload:{attemptId:requestedActive.data.attemptId,revision:requestedActive.data.state.revision,submissions:requestedActive.data.state.originalSequence.map(questionId=>({questionId,answer:requestedAnswers.get(questionId)}))},requestId:'requested-quiz-complete',ticket:loginTicket,token:loginResults[0].data.token});

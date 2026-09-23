@@ -27,7 +27,7 @@
 index.html, teacher.html, config.rc.js, game-api.js, student-preview.html, rc-preview-manifest.json, .nojekyll, docs/normal-rc-hosting-20260923.md. 새 RC 배포 브랜치에서만 변경했다.
 
 ## 미검증 / 다음 단계
-- 유효 교사 인증은 아직 하지 않음. 보안 입력으로 기존 인증을 요청한다.
+- 후속 확인: 안전한 인증 입력 후 기존 최고 관리자 로그인이 성공했고, 교사 대시보드와 학교·단원 범위를 실제 화면에서 확인했다.
 - 학생용 최소 로그인·완료 outbox·전체 게임 모드 연결, 실 화면 5/15/30명 시험과 목표 성능은 아직 미완료.
 - 원본 학생 화면은 student-preview.html에 그대로 보존했으며 아직 학생 시험용으로 안내하지 않는다.
 - UI 요청은 서버 성공 체크포인트 뒤 별도 커밋으로 진행한다.

@@ -3,7 +3,7 @@ let state42=null,busy42=false,attempts42={},openPlan42=null,rank42=null,portal42
 const PACK_CARD_HOLD_MS42=1500;
 let matchPreviewTimer42=null,matchPreviewEpoch42=0;
 const api42=HistoryGameAPI,clone42=x=>JSON.parse(JSON.stringify(x));
-const stateCacheKey42='history-v42-student-state:'+(window.HISTORY_API_CONFIG?.gasUrl||'local');
+const stateCacheKey42='history-v42-student-state:'+(window.HISTORY_API_CONFIG?.rcUrl||window.HISTORY_API_CONFIG?.gasUrl||'local')+':'+(window.HISTORY_API_CONFIG?.rcStorageScope||'default');
 function rewardQuantity42(result){if(!result)return null;const sum=list=>Array.isArray(list)?list.reduce((total,item)=>total+Math.max(1,Number(item?.count)||1),0):0,cardCount=sum(result.cards),packCount=sum(result.packs);if(cardCount)return{count:cardCount,label:'카드',unit:'장'};if(packCount)return{count:packCount,label:'카드팩',unit:'개'};const message=String(result.message||''),match=message.match(/(\d+)\s*(장|개)/);return match?{count:Number(match[1]),label:match[2]==='장'?'카드':'보상',unit:match[2]}:null}
 function rewardNotice42(kind,result){const q=rewardQuantity42(result),prefix=kind==='login'?'로그인 보상':'미션 완료 보상';return q?`${prefix}으로 ${q.label} ${q.count}${q.unit}을 받았습니다.`:`${prefix}: ${String(result?.message||'보상을 받았습니다.')}`}
 function verifiedStudentProfile42(login,requested){const p=login?.student?.profile;if(!p)return false;return ['schoolYear','grade','classNo','number'].every(key=>Number(p[key])===Number(requested[key]))}

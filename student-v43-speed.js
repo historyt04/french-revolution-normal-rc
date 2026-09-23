@@ -1,10 +1,16 @@
 /* v4.3 fast path: play learning quizzes locally; verify one transcript at completion. */
 (function(){'use strict';
  const quizModes=new Set(['beginner','intermediate']);
- const prepared=new Map(),preparing=new Map(),activating=new Map();
+ const prepared=new Map(),preparing=new Map(),activating=new Map(),cancelledQuizAttempts=new Set(),abandoningQuizAttempts=new Map();
  let ownerToken='';
  const key=(mode,options={})=>mode==='matching'?`${mode}:${options.variant||matchMode2}:${options.setCount||matchSets2}`:mode;
  const supported=a=>a?.status==='prepared'&&(quizModes.has(a.mode)?Array.isArray(a.state?.localQuestions):a.mode!=='matching'||a.state?.cards?.every(c=>c.matchKey&&c.eventId!==undefined));
+ function abandonQuizAttempt(a){
+  if(!a?.attemptId||String(a.attemptId).startsWith('local-'))return Promise.resolve(null);
+  const id=a.attemptId;if(abandoningQuizAttempts.has(id))return abandoningQuizAttempts.get(id);
+  const task=api42.request('attempt.abandon',{attemptId:id,revision:a.state?.revision||0},{maxAttempts:2,timeoutMs:5000}).catch(()=>null).finally(()=>abandoningQuizAttempts.delete(id));
+  abandoningQuizAttempts.set(id,task);return task;
+ }
  async function prepare(mode,options={}){
   if(!state42||!api42.session||!state42.visibility?.game||!state42.allowed)return null;
   if(!state42.testOnly&&!state42.unlocked?.[mode])return null;
@@ -31,7 +37,14 @@
  }
  function registerLocalQuiz(local){
   const mode=local.mode,questionIds=local.state.originalSequence.slice(),tempId=local.attemptId;
-  const task=(async()=>{const ready=await api42.request('attempt.prepare',{mode,questionIds,restart:true},{maxAttempts:2,timeoutMs:12000});const server=await api42.request('attempt.activate',{attemptId:ready.attemptId,revision:ready.state.revision},{maxAttempts:2,timeoutMs:12000});const live=attempts42[mode];if(live?.attemptId!==tempId&&live?.attemptId!==server.attemptId)return server;live.attemptId=server.attemptId;live.startedAt=server.startedAt;live.expiresAt=server.expiresAt;live.serverNow=server.serverNow;live.state.revision=server.state.revision;live.activationError=false;if(P[mode])P[mode].run=server.attemptId;return server})().catch(error=>{const live=attempts42[mode];if(live?.attemptId===tempId)live.activationError=true;throw error}).finally(()=>activating.delete(mode));
+  let task;task=(async()=>{
+   const ready=await api42.request('attempt.prepare',{mode,questionIds,restart:true},{maxAttempts:2,timeoutMs:12000});
+   if(cancelledQuizAttempts.has(tempId)){await abandonQuizAttempt(ready);return ready}
+   const server=await api42.request('attempt.activate',{attemptId:ready.attemptId,revision:ready.state.revision},{maxAttempts:2,timeoutMs:12000});
+   if(cancelledQuizAttempts.has(tempId)){await abandonQuizAttempt(server);return server}
+   const live=attempts42[mode];if(live?.attemptId!==tempId&&live?.attemptId!==server.attemptId)return server;
+   live.attemptId=server.attemptId;live.startedAt=server.startedAt;live.expiresAt=server.expiresAt;live.serverNow=server.serverNow;live.state.revision=server.state.revision;live.activationError=false;if(P[mode])P[mode].run=server.attemptId;return server
+  })().catch(error=>{const live=attempts42[mode];if(live?.attemptId===tempId)live.activationError=true;throw error}).finally(()=>{if(activating.get(mode)===task)activating.delete(mode)});
   activating.set(mode,task);void task.catch(()=>{});return task;
  }
  function startLocalQuiz(mode){
@@ -56,6 +69,18 @@
   const [first,second]=matchGame.open;matchGame.lock=true;matchGame.moves++;matchGame.localMoves.push({first,second});const same=matchGame.cards[first].matchKey===matchGame.cards[second].matchKey;
   if(same){matchGame.done.push(first,second);matchGame.open=[];matchGame.lock=false;render42();if(matchGame.done.length===matchGame.cards.length){matchGame.submitting=true;run42(async()=>{await awaitActivation('matching');const out=await api42.request('attempt.match.complete',payload42('matching',{moves:matchGame.localMoves}));applyState42(out.student);applyAttempt42(out);render42()})}return}
   render42();const current=matchGame;setTimeout(()=>{if(matchGame===current&&!current.submitting){current.open=[];current.lock=false;render42()}},700);
+ };
+ const stopGameBase43=stopGame2;
+ stopGame2=function(mode,nextView){
+  if(!quizModes.has(mode))return stopGameBase43(mode,nextView);
+  const current=active2(mode);if(!current)return;
+  if(!confirm('현재 진행은 저장되지 않습니다. 게임을 중단할까요?'))return;
+  const tempId=current.attemptId,pendingActivation=activating.get(mode);
+  cancelledQuizAttempts.add(tempId);
+  if(pendingActivation){activating.delete(mode);void pendingActivation.finally(()=>cancelledQuizAttempts.delete(tempId)).catch(()=>{})}
+  else{void abandonQuizAttempt(current);cancelledQuizAttempts.delete(tempId)}
+  delete attempts42[mode];if(Array.isArray(state42?.pendingAttempts))state42.pendingAttempts=state42.pendingAttempts.filter(x=>x.mode!==mode&&x.attemptId!==tempId);
+  P[mode]=freshQ(mode);stage2Dialog=null;view=nextView||'results';render42();clock();bonusClock();
  };
  window.HistoryV43Speed={prepare,awaitActivation};
  const logoutBase=logout42;logout42=async function(){prepared.clear();preparing.clear();activating.clear();ownerToken='';return logoutBase()};

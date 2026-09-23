@@ -1,6 +1,6 @@
 {
   "format": "history-full-game-rc-build-v1",
-  "release": "43-quiz50-20260923a",
+  "release": "43-quiz50-20260923b",
   "configured": true,
   "edgeFunction": "history-rc-api",
   "namespace": "rc-fr42-20260920",
@@ -111,7 +111,7 @@
     "history-content.js": "6ce5aeec30175180f7cb311801e2b3df912889fce151c1a97afd1ebd3e24c958",
     "history-game-card.css": "ebfba05ba6fe18bb7a828631c6455a9071223a84084a63b8964d210f70be0808",
     "history-game-card.js": "376e1a89e9e21ace25cd6578ace92d5480326c773a44c12d8da8e9e9b7669287",
-    "index.html": "732d490d58cfe06141cfcc1dc3d0ad257102176baebb7e851fe4b30fb5ac5b07",
+    "index.html": "74a6924265e9c6ce9998f67fb3216de0103fc9e72e109d8e232524673bdb0c1e",
     "integration.css": "0f4661baed5a78edf2efe9ec59974c5379c82c3f8d0459aabfe4faa4a40796bd",
     "integration.js": "a21c07ef32c3667001d7354fd230c127f3c201a4f85727b6984a0f69d24206cb",
     "legacy-game.css": "cb7c454c6f3dbbcf0fbc501bc1aab99bc2cdfc76297aa2f52a39645f0cf907dd",
@@ -155,7 +155,7 @@
     "teacher.js": "8b86dc5281563ed352fee03f7823666d76f94c0b601bedd415a8c6bff461e105",
     "ui-stage28.js": "afe52bea9dd516dba530e4ac422090281ec469aadea22484826a32c4bf038e89",
     "v42.css": "7e78bd9573c28798cbbb934763f06f70f9a9d8d9e54dd5a4e94cce7fa0037ca0",
-    "student-v43-speed.js": "a7b61994ab3a466ecdb7a0693d4574aec969f3a35a9022ef75bc685c64661517",
+    "student-v43-speed.js": "20b40ab1dfcfe9bc7a1c0491a6d761daa6f2556e66ee37d739ea1f3629eedecd",
     "quiz-bank50.js": "31f1c9e4b687d42c17db4417d3fe08493a71c488a7c768795680de5cb3cc2d67"
   }
 }

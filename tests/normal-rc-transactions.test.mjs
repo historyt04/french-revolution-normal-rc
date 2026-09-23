@@ -98,6 +98,16 @@ success(await service(req('student.records.read',{},student1.token)));
 const samePack=req('cards.openPack',{packId:'basic',count:1},student1.token),beforeOpen=packCount();
 const simultaneous=await Promise.all([service(samePack),service(samePack),service(samePack)]);simultaneous.forEach(success);assert.equal(packCount(),beforeOpen-1);assert.equal(simultaneous.filter(r=>r.replayed).length,2);
 const teacher=success(await service(req('teacher.login',{schoolYear:2026,loginId:'fixture-teacher',code:'local-only-credential'})));
+const teacherPractice=success(await service(req('teacher.test.issue',{},teacher.token)));
+const practiceState=success(await service(req('student.state',{},teacherPractice.token)));
+assert.equal(practiceState.testOnly,true);assert.equal(practiceState.visibility.collection,false);
+const advancedPrepared=success(await service(req('attempt.prepare',{mode:'advanced'},teacherPractice.token)));
+const advancedActive=success(await service(req('attempt.activate',{attemptId:advancedPrepared.attemptId,revision:advancedPrepared.state.revision},teacherPractice.token)));
+assert.equal(advancedActive.state.localQuestions.length,12);
+for(const question of advancedActive.state.localQuestions){assert.equal(question.choices.length,5);assert.equal(question.answers[0],String(question.correctIndex+1));assert(question.explanation.length>=20)}
+clock+=10000;
+const advancedComplete=success(await service(req('attempt.quiz.complete',{attemptId:advancedActive.attemptId,revision:advancedActive.state.revision,submissions:advancedActive.state.originalSequence.map(questionId=>{const question=advancedActive.state.localQuestions.find(row=>row.id===questionId);return{questionId,answer:String(question.correctIndex+1)}})},teacherPractice.token)));
+assert.equal(advancedComplete.status,'completed');assert.equal(advancedComplete.state.successIds.length,12);assert.equal(tables.records.some(row=>row.studentId==='TEST:fixture-teacher'&&row.mode==='advanced'),false,'teacher practice must not create student records or rewards');
 const missionOverview=success(await service(req('teacher.overview',{schoolYear:2026},teacher.token)));
 const studentMissionsBefore=success(await service(req('student.state',{},student1.token))).missions.map(x=>x.id).sort();
 const missionDraft=structuredClone(missionOverview.missions25.program.draft);missionDraft[0]={...missionDraft[0],active:true,title:'RC 초안 저장 검증',games:['beginner']};
@@ -126,4 +136,4 @@ assert((await service(create)).replayed);assert.equal(tables.students.length,32)
 const beforeRotate={records:tables.records.filter(x=>x.studentId===student1.user.id).length,cards:tables.cards.filter(x=>x.studentId===student1.user.id).reduce((n,x)=>n+x.count,0)};
 const rotated=success(await service(req('teacher.student.code.rotate',{studentId:student1.user.id,reason:'forgotten code regression',confirmed:true},teacher.token)));assert.match(rotated.code,/^\d{5}$/);assert.equal((await service(req('student.state',{},student1.token))).code,'SESSION_EXPIRED');
 const relogin=success(await service(req('student.login',{schoolId:'school-01',schoolYear:2026,grade:2,classNo:98,number:1,code:rotated.code}))),persisted=success(await service(req('student.state',{},relogin.token)));assert(persisted.completed.beginner);assert(persisted.cards.length>0);assert.equal(tables.records.filter(x=>x.studentId===student1.user.id).length,beforeRotate.records);assert.equal(tables.cards.filter(x=>x.studentId===student1.user.id).reduce((n,x)=>n+x.count,0),beforeRotate.cards);
-console.log('PASS: minimal login/replay; student boundaries; attendance; completion rollback and two replay paths; pack atomic replay/conflict and guarantee rules; opening/report rate partitions; 30-row teacher registration; code rotation with record persistence. In-memory adapter, NOT a hosted load benchmark.');
+console.log('PASS: minimal login/replay; student boundaries; attendance; completion rollback and two replay paths; 12-question advanced teacher practice without rewards; pack atomic replay/conflict and guarantee rules; opening/report rate partitions; 30-row teacher registration; code rotation with record persistence. In-memory adapter, NOT a hosted load benchmark.');

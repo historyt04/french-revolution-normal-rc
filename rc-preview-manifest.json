@@ -1,0 +1,10 @@
+{
+  "status": "teacher-verification-only",
+  "sourceRepository": "historyt04/french-revolution-v42-rc",
+  "sourceCommit": "40462544c96443a4e19c155d12d5ba0a897d8e30",
+  "productionCommit": "8e1e26d973000a30e2d09212667c800347f273a7",
+  "apiFunction": "history-normal-rc-api",
+  "databaseSchema": "history_v5",
+  "preservedStudentEntry": "student-preview.html",
+  "studentTrialReady": false
+}

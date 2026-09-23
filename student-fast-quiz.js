@@ -3,9 +3,8 @@
  const answerLegacy=answer;
  const quizModes=new Set(['beginner','intermediate']);
  const findQuestion=s=>(s.localQuestions||[]).find(q=>q.id===s.sequence[s.pos]);
- const thirdHint=q=>{const chars=[...String(q.answerLabel||'').replace(/\s/g,'')];return chars.length?`정답은 ${chars.length}글자이며 첫 글자는 ‘${chars[0]}’입니다.`:''};
- const maskedAnswer=q=>{let shown=false;return[...String(q.answerLabel||'')].map(ch=>{if(/\s/.test(ch)||/[0-9]/.test(ch)||/[^\p{L}\p{N}]/u.test(ch))return ch;if(!shown){shown=true;return ch}return'O'}).join('')};
- function hintFor(q,round){if(!round)return{hint:'',label:''};if(round===1)return{hint:q.hints?.[0]||'',label:'2바퀴 힌트 1'};if(round===2)return{hint:q.hints?.[1]||q.hints?.[0]||'',label:'3바퀴 힌트 2'};if(round===3)return{hint:thirdHint(q),label:'4바퀴 힌트 3'};return{hint:'정답 단서: '+maskedAnswer(q),label:`${round+1}바퀴 정답 일부 공개`}}
+ const maskedAnswer=(q,round)=>{let count=0;return[...String(q.answerLabel||'')].map(ch=>{if(/\s|[0-9]|[^\p{L}\p{N}]/u.test(ch))return ch;return ++count<=round-2?ch:/[가-힣]/u.test(ch)?'ㅇ':'○'}).join('')};
+ function hintFor(q,round){if(!round)return{hint:'',label:''};if(round===1)return{hint:q.hints?.[0]||'',label:'2바퀴 설명 힌트'};if(round===2)return{hint:q.hints?.[1]||q.hints?.[0]||'',label:'3바퀴 설명 힌트'};return{hint:'정답 단서: '+maskedAnswer(q,round),label:`${round+1}바퀴 글자 힌트`}}
  function setQuestion(s){const q=findQuestion(s),round=q?(s.retryRounds[q.id]||0):0,h=q?hintFor(q,round):null;s.question=q?{id:q.id,eventId:q.eventId,type:q.type,prompt:q.prompts[0],image:q.image,hint:h.hint,hintLabel:h.label,pass:round+1}:null}
  function advanceLocal(a){const s=a.state;if(s.pos<s.sequence.length-1)s.pos++;else{const failed=s.originalSequence.filter(id=>!s.passed[id]);s.firstPassDone=true;if(!failed.length)return true;s.phase='retry';s.sequence=failed;s.pos=0;failed.forEach(id=>s.retryRounds[id]=(s.retryRounds[id]||0)+1)}s.roundAttempts=0;s.result='';setQuestion(s);return false}
  const applyBase=applyAttempt42;

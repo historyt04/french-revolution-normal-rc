@@ -23,7 +23,7 @@ export function validateRequest(req) {
 // Pure server execution. No network or irreversible side effect before CAS commit.
 export function execute(snapshot,request,options) {
   validateRequest(request);
-  const {pepper,backupKey,now=()=>Date.now(),token=()=>randomBytes(32).toString('base64url'),rng=random,backupEnvelope}=options;
+  const {pepper,backupKey,now=()=>Date.now(),token=()=>randomBytes(32).toString('base64url'),rng=random,backupEnvelope,minimalLogin=false,partitionRates=false}=options;
   invariant(typeof pepper==='string' && pepper.length>=16,'SERVER_CONFIGURATION_REQUIRED');
   const repo=new Repository(snapshot.tables), backups=[], copies=[];
   const hash=gasHash(pepper);
@@ -46,7 +46,8 @@ export function execute(snapshot,request,options) {
     // As in GAS restoreCopy, the active dataset is never overwritten/switched.
     return {restoreNamespace:namespace,snapshotAt:b.snapshotAt,activeDataUnchanged:true,reviewRequired:true};
   };
-  const service=createService({repo,now,token,hash,random:rng,backup},rules);
+  const rate=partitionRates?(key,max)=>{if(key==='global-login')return;const id=hash('rate:'+key),old=repo.get('limits',id),row=old&&now()-Date.parse(old.windowAt)<60000?old:{id,schoolYear:new Date(now()).getUTCFullYear(),key:id,count:0,windowAt:new Date(now()).toISOString()};invariant(row.count<max,'RATE_LIMIT');row.count++;repo.put('limits',row)}:undefined;
+  const service=createService({repo,now,token,hash,random:rng,backup,minimalLogin,rate},rules);
   try {
     if(rewardActions.has(request.action)) {
       const c=service.authenticate(request.token);

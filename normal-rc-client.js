@@ -51,7 +51,7 @@
  const decisionDecorate=decorateStage2Body;decorateStage2Body=function(html){const a=attempts42[view];let out=decisionDecorate(html);if(a?.clientRequestId?.startsWith('decision-')&&a.syncStatus&&a.syncStatus!=='confirmed')out=out.replace('학습 완료</h2>','답안 제출 완료</h2>').replaceAll('완료 기록','제출 답안');return out};
  window.HistoryNormalCompletion={submitQuiz,submitMatching,retry};
  addEventListener('beforeunload',event=>{if(Object.values(attempts42).some(a=>a.unsavedCompletion||a.syncStatus==='saving')){event.preventDefault();event.returnValue=''}});
- addEventListener('online',()=>void load());addEventListener('history-session-changed',()=>{loading=true;notices.clear();clearTimeout(retryTimer);if(owner())void load()});
+ addEventListener('online',()=>void load());addEventListener('history-session-changed',()=>{loading=true;notices.clear();clearTimeout(retryTimer);if(owner())void load();else loading=false});
  addEventListener('history-login-verified',()=>{const status=document.querySelector('#connection42');if(status)status.textContent='학생 확인 완료 · 출석과 학습 상태를 불러옵니다.'});
  if(owner())void load();else loading=false;
 })();

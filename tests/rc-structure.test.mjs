@@ -33,5 +33,6 @@ assert(fastQuiz.includes("new Set(['beginner','intermediate','advanced'])"));
 assert(fastQuiz.includes('교과서용 사건 삽화'));
 assert(normalClient.includes('const id=api42.session?.user?.id'));
 assert(normalClient.includes('!api42.session?.testOnly'));
+assert(normalClient.includes('if(owner())void load();else loading=false'));
 
 console.log('PASS: curriculum ownership, 12 advanced five-choice questions, answer keys/explanations, image assets, and advanced quiz routing.');

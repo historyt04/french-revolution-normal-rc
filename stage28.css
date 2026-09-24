@@ -62,3 +62,8 @@ body.r27-board #boardApp27{max-width:1920px}.r27-board-list article{min-width:0;
 @media(max-width:600px){.device-notice28{display:block}body .wrap,body .headerin{width:calc(100% - 20px)}body .map-zones26,body .map-reference26,body .rank42{grid-template-columns:1fr}.reveal-stage28{grid-template-columns:1fr}.reveal-card28{max-width:260px!important}.reveal-caption28{gap:10px}body .layout .formgrid{grid-template-columns:1fr}body .answer-form26>div{flex-wrap:wrap}body .answer-form26 button{width:100%}}
 @media(orientation:portrait){.wide-game28 .rotate-notice28{display:block}}
 @media(prefers-reduced-motion:reduce){body .reveal-modal28 *,body .celebration25 *,body .shiny25 *,body .history-card__rotator{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+/* RC pack reveal: card clicks only control this inspection layer. */
+.opening-card-wrap28{display:block;position:relative;width:100%}.opening-card-wrap28>.history-card{width:100%}
+.opening-new28{right:-8px;top:-8px;padding:9px 14px;border:2px solid #fff1a8;background:#b42720;color:#fffbe8;font-size:18px;letter-spacing:.08em;box-shadow:0 4px 15px #000b,0 0 22px #ffce58aa}
+.opening-zoom28{position:fixed;z-index:24000;inset:0;display:grid;place-items:center;padding:24px;background:#050a14e8}
+.opening-zoom28>button{width:min(430px,86vw);max-height:92dvh;padding:0;border:0;background:transparent}.opening-zoom28 .history-card{width:100%}

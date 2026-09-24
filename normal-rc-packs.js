@@ -6,19 +6,20 @@
  let pending=[],timer=null,starting=false,loading=null,requested=null;
  const queue=new HistoryNormalOutbox.CompletionQueue({store,owner,request:(...args)=>api42.request(...args),
   onChange(row){pending=pending.filter(x=>x.id!==row.id);if(row.owner===owner()&&row.status!=='confirmed')pending.push(row);schedule()},
-  onConfirmed(row,result){if(!owner())return;applyState42(result.student);if(requested===row.clientId){requested=null;attachOpening28(result.opening,row.revealMode==='all');if(row.revealMode==='auto'){packAutoV38=true;render42()}}else{render42();toast42('카드팩 개봉 결과를 확인했습니다. 보관함에서 확인하세요.')}}
+  onConfirmed(row,result){if(!owner())return;applyState42(result.student);if(requested===row.clientId){requested=null;attachOpening28(result.opening,row.revealMode)}else{render42();toast42('카드팩 개봉 결과를 확인했습니다. 보관함에서 이어서 볼 수 있습니다.')}}
  });
  function schedule(){clearTimeout(timer);if(owner()&&pending.some(x=>x.status==='pending'))timer=setTimeout(()=>void queue.flush().catch(storageError),4000)}
  function storageError(){toast42('개봉 요청을 기기에 보관하지 못했습니다. 저장 공간을 확인해 주세요. 저장 전에는 팩을 차감하지 않습니다.')}
  function load(){if(loading)return loading;const who=owner();loading=(async()=>{const rows=await queue.rows();if(who!==owner())return;pending=rows.filter(x=>x.status!=='confirmed');schedule();void queue.flush().catch(storageError)})().catch(storageError).finally(()=>{loading=null});return loading}
  const beginBase=beginOpening28;
- beginOpening28=async function(mode='manual'){
+ beginOpening28=async function(mode){
   if(state42?.testOnly)return beginBase(mode);
   if(starting||busy42||!openPlan42||opening28||!owner())return;
   starting=true;
   try{
    await load();if(pending.length){toast42('앞서 요청한 카드팩 개봉을 확인 중입니다. 같은 요청으로 다시 확인합니다.');void queue.flush();return}
-   const input={clientId:'pack-'+api42.newRequestId(),mode:'pack',action:'cards.openPack',direct:true,payload:{packId:openPlan42.packId,count:openPlan42.total},revealMode:mode===true?'all':mode===false?'manual':mode};
+   const revealMode=mode||openPlan42.mode||'single',count=revealMode==='all'?openPlan42.total:1;
+   const input={clientId:'pack-'+api42.newRequestId(),mode:'pack',action:'cards.openPack',direct:true,payload:{packId:openPlan42.packId,count},revealMode};
    requested=input.clientId;await queue.enqueue(input);toast42('카드팩 개봉을 확인 중입니다. 화면을 다시 열어도 같은 요청으로 확인합니다.');void queue.flush().catch(storageError);
   }catch{storageError()}finally{starting=false}
  };

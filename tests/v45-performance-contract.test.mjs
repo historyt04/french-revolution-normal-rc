@@ -21,7 +21,7 @@ test('v4.6 reduces database round trips without changing the isolated schema',as
  assert.doesNotMatch(migration,/drop\s+(table|schema)/i);
 });
 
-test('v4.6 bounds retry amplification and preserves local quiz batching',async()=>{
+test('v4.7 bounds retry amplification and preserves local quiz batching',async()=>{
  const [api,transaction,speed,client,domain]=await Promise.all([
   read('game-api.js'),
   read('supabase/functions/_shared/transaction-service.mjs'),
@@ -29,7 +29,7 @@ test('v4.6 bounds retry amplification and preserves local quiz batching',async()
   read('normal-rc-client.js'),
   read('supabase/functions/_shared/gas-v6-domain.mjs')
  ]);
- assert.match(api,/version:'4\.6'/);
+ assert.match(api,/version:'4\.7'/);
  assert.match(api,/studentMutationTail/);
  assert.match(api,/singleFlight/);
  assert.match(api,/Number\(opts\.maxAttempts\)\|\|3/);
@@ -44,16 +44,37 @@ test('v4.6 bounds retry amplification and preserves local quiz batching',async()
  assert.doesNotMatch(domain,/resultShinyBonus/);
 });
 
-test('v4.6 labels and cache keys are internally consistent',async()=>{
+test('v4.7 labels and cache keys are internally consistent',async()=>{
  const [student,teacher,manifest,api]=await Promise.all([
   read('student-preview.html'),read('teacher.html'),read('rc-preview-manifest.json'),read('game-api.js')
  ]);
- assert.match(student,/학습 게임 v4\.6/);
- assert.match(student,/game-api\.js\?v=46-/);
- assert.match(teacher,/통합 플랫폼 v4\.6/);
- assert.match(teacher,/game-api\.js\?v=46-/);
- assert.equal(JSON.parse(manifest).release,'v4.6-rc-20260928');
- assert.match(api,/version:'4\.6'/);
+ assert.match(student,/학습 게임 v4\.7/);
+ assert.match(student,/game-api\.js\?v=47-/);
+ assert.match(student,/student-v47\.js\?v=47-/);
+ assert.match(teacher,/통합 플랫폼 v4\.7/);
+ assert.match(teacher,/game-api\.js\?v=47-/);
+ assert.match(teacher,/teacher-v47\.js\?v=47-/);
+ assert.equal(JSON.parse(manifest).release,'v4.7-rc-20260928');
+ assert.match(api,/version:'4\.7'/);
+});
+
+test('v4.7 adds cached rankings, TOP 100 filters, and session-only issued-code export',async()=>{
+ const [domain,transaction,board,teacher,student,roster,ready]=await Promise.all([
+  read('supabase/functions/_shared/gas-v6-domain.mjs'),read('supabase/functions/_shared/transaction-service.mjs'),read('board27.js'),read('teacher-v47.js'),read('student-v47.js'),read('teacher-student-import.js'),read('teacher-test-ready.js')
+ ]);
+ assert.match(domain,/completionRanked/);
+ assert.match(domain,/\['all','today','weekly','monthly','yearly'\]/);
+ assert.match(domain,/number\(p\.limit\|\|100,1,100\)/);
+ assert.match(domain,/setCount:p\.setCount/);
+ assert.match(transaction,/teacher\.board\.read/);
+ assert.match(board,/TOP \$\{n\}/);
+ assert.match(board,/leaderboardV47/);
+ assert.match(teacher,/TOP 100/);
+ assert.match(student,/history-rank-v47/);
+ assert.match(student,/86400000/);
+ assert.match(roster,/downloadIssuedCodes47/);
+ assert.match(roster,/studentSecretsReady/);
+ assert.doesNotMatch(ready,/prompt\('접속코드 재발급 사유'/);
 });
 
 test('v4.6 uses narrow idempotent paths for opening acknowledgement and abandon',async()=>{

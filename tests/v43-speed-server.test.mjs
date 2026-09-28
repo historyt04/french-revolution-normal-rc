@@ -48,8 +48,9 @@ assert.equal(bootstrap.ok,true);
 assert.equal(bootstrap.data.ticket.expiresAt,1_120_000);
 assert.equal(bootstrap.data.schools.length,1);
 
-// Valid classroom login burst: initialize the real domain, seed 30 students,
+// Valid classroom login burst: initialize the real domain, seed 50 students,
 // and verify that every session is persisted by one combined commit.
+const CLASSROOM_SIZE=50;
 id=0;
 const seeded=new Repository(emptyTables()),fixedNow=Date.parse('2026-09-22T09:00:00+09:00'),hash=gasHash(pepper);
 let clock=fixedNow;
@@ -57,29 +58,37 @@ const domain=createService({repo:seeded,now:()=>clock,token,hash,random:()=>0.25
 domain.init(2026);
 seeded.put('schools3',{id:'school-01',schoolYear:0,name:'학교',active:true,createdAt:new Date(fixedNow).toISOString()});
 seeded.put('system',{id:'authority3',schoolYear:0,key:'authority3',value:{version:3,legacySchoolId:'school-01'},updatedAt:new Date(fixedNow).toISOString()});
-for(let number=1;number<=30;number++){
+for(let number=1;number<=CLASSROOM_SIZE;number++){
   const studentId=`2026-2-4-${number}`,code=String(10000+number);
   seeded.put('students',{id:studentId,schoolYear:2026,grade:2,classNo:4,number,name:`학생${number}`,nickname:`학생${number}`,codeHash:hash(`credential:student:${studentId}:${code}`),active:true,createdAt:new Date(fixedNow).toISOString()});
   seeded.put('studentScopes3',{id:studentId,schoolYear:2026,studentId,schoolId:'school-01',units:['fr-revolution'],createdAt:new Date(fixedNow).toISOString()});
+  seeded.put('packs',{id:`${studentId}:fr-revolution:basic`,schoolYear:2026,studentId,unitId:'fr-revolution',packId:'basic',count:1,guarantees:[0],updatedAt:new Date(fixedNow).toISOString()});
   for(const mode of ['beginner','intermediate','advanced'])seeded.put('records',{id:`seed-${studentId}-${mode}`,schoolYear:2026,studentId,unitId:'fr-revolution',mode,attemptId:`seed-${studentId}-${mode}`,elapsedMs:60000,attempts:1,hintCount:0,score:12,official:false,status:'normal',reason:'',createdAt:new Date(fixedNow-86400000).toISOString()});
 }
 seeded.commit();
 const loginStore=fakeStore(seeded.snapshot()),loginBatch=makeBatchService({store:loginStore,namespace,pepper,backupKey,token,now:()=>clock,batchWindowMs:20,maxBatchSize:64,cacheMs:2000});
 const loginTicket=publicBootstrap({pepper,schools:[{id:'school-01',name:'학교'}],token,now:()=>fixedNow}).data.ticket;
-const loginResults=await Promise.all(Array.from({length:30},(_,i)=>loginBatch({action:'student.login',payload:{schoolId:'school-01',schoolYear:2026,grade:2,classNo:4,number:i+1,code:String(10001+i),rememberDevice:false},requestId:`login-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket})));
+const loginResults=await Promise.all(Array.from({length:CLASSROOM_SIZE},(_,i)=>loginBatch({action:'student.login',payload:{schoolId:'school-01',schoolYear:2026,grade:2,classNo:4,number:i+1,code:String(10001+i),rememberDevice:false},requestId:`login-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket})));
 assert.equal(loginResults.filter(result=>!result.ok).length,0);
-assert.equal(new Set(loginResults.map(result=>result.data.token)).size,30);
+assert.equal(new Set(loginResults.map(result=>result.data.token)).size,CLASSROOM_SIZE);
+const packResults=await Promise.all(loginResults.map((loginResult,i)=>loginBatch({action:'cards.openPack',payload:{packId:'basic',count:1},requestId:`pack-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket,token:loginResult.data.token})));
+assert.equal(packResults.filter(result=>!result.ok).length,0);
+assert(packResults.every(result=>result.data.cards.length===1&&result.data.student.packs.find(pack=>pack.packId==='basic')?.count===3));
+const repeatedPack=await loginBatch({action:'cards.openPack',payload:{packId:'basic',count:1},requestId:'pack-request-01',ticket:loginTicket,token:loginResults[0].data.token});
+assert.equal(repeatedPack.ok,true);assert.equal(repeatedPack.replayed,true);assert.equal(repeatedPack.data.student.packs.find(pack=>pack.packId==='basic')?.count,3);
 const prepareResults=await Promise.all(loginResults.map((loginResult,i)=>loginBatch({action:'attempt.prepare',payload:{mode:'beginner'},requestId:`prepare-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket,token:loginResult.data.token})));
 assert.equal(prepareResults.filter(result=>!result.ok).length,0);
 assert(prepareResults.every(result=>result.data.status==='prepared'&&result.data.state.localQuestions.length===result.data.state.originalSequence.length));
 assert(prepareResults.every(result=>result.data.state.originalSequence.length===10&&new Set(result.data.state.localQuestions.map(q=>q.eventId)).size===10));
 const activateResults=await Promise.all(prepareResults.map((prepared,i)=>loginBatch({action:'attempt.activate',payload:{attemptId:prepared.data.attemptId,revision:prepared.data.state.revision},requestId:`activate-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket,token:loginResults[i].data.token})));
 assert.equal(activateResults.filter(result=>!result.ok).length,0);
-clock+=4000;
+clock+=60000;
 const completeRequests=activateResults.map((active,i)=>{const byId=new Map(active.data.state.localQuestions.map(q=>[q.id,q]));return{action:'attempt.quiz.complete',payload:{attemptId:active.data.attemptId,revision:active.data.state.revision,submissions:active.data.state.originalSequence.map(questionId=>({questionId,answer:byId.get(questionId).answers[0]}))},requestId:`complete-request-${String(i+1).padStart(2,'0')}`,ticket:loginTicket,token:loginResults[i].data.token}});
 const completeResults=await Promise.all(completeRequests.map(request=>loginBatch(request)));
 assert.equal(completeResults.filter(result=>!result.ok).length,0);
 assert(completeResults.every(result=>['completed','review'].includes(result.data.status)));
+const studentRanking=await loginBatch({action:'rankings.read',payload:{mode:'beginner',period:'all'},requestId:'student-ranking-request',ticket:loginTicket,token:loginResults[0].data.token});
+assert.equal(studentRanking.ok,true);assert.equal(studentRanking.data.personalCompletions,1);assert.equal(studentRanking.data.completionClassRank,1);
 const repeated=await loginBatch(completeRequests[0]);
 assert.equal(repeated.ok,true);
 assert.equal(repeated.replayed,true);
@@ -129,4 +138,4 @@ assert(['completed','review'].includes(advancedConnection.data.status));assert.e
 const loginStats=loginStore.stats();
 assert(loginStats.loads<=3);
 
-console.log(JSON.stringify({legacy:legacyStats,legacyBusy:legacyResults.filter(result=>result.code==='BUSY').length,batch:batchStats,batchBusy:0,bootstrap:'database-free',classroomFlow:{...loginStats,logins:30,prepared:30,activated:30,quizCompleted:30,matchingCompleted:1,adminDenied:true,stolenAttemptDenied:true}}));
+console.log(JSON.stringify({legacy:legacyStats,legacyBusy:legacyResults.filter(result=>result.code==='BUSY').length,batch:batchStats,batchBusy:0,bootstrap:'database-free',classroomFlow:{...loginStats,logins:CLASSROOM_SIZE,packOpens:CLASSROOM_SIZE,prepared:CLASSROOM_SIZE,activated:CLASSROOM_SIZE,quizCompleted:CLASSROOM_SIZE,matchingCompleted:1,studentRanking:true,adminDenied:true,stolenAttemptDenied:true}}));

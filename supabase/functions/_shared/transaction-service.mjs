@@ -5,7 +5,7 @@ const staffRoles=new Set(['teacher','owner','teacherTest']);
 const retryableTransactionCodes=new Set(['40001','40P01']);
 // These staff operations only read shared/student data and write their own
 // session, receipt, audit or backup rows. Configuration changes remain exclusive.
-const sharedStaffActions=new Set(['teacher.login','teacher.overview','teacher.student.cards','teacher.records.read','teacher.records.student','teacher.records.settings','teacher.records.csv','teacher.scope.read','teacher.backup.create','teacher.backup.restoreCopy','teacher.test.check','portal.read','access.check','rankings.read','session.logout']);
+const sharedStaffActions=new Set(['teacher.login','teacher.overview','teacher.student.cards','teacher.records.read','teacher.records.student','teacher.records.settings','teacher.records.csv','teacher.scope.read','teacher.backup.create','teacher.backup.restoreCopy','teacher.test.check','teacher.board.read','portal.read','access.check','rankings.read','session.logout']);
 const deny=code=>({ok:false,code,message:({AUTH_REQUIRED:'먼저 로그인하세요.',SESSION_EXPIRED:'다시 로그인해 주세요.',FORBIDDEN:'이 기능을 사용할 권한이 없습니다.',BUSY:'잠시 후 같은 요청으로 다시 시도합니다.'})[code]||'서버에서 요청을 확인하지 못했습니다.'});
 const brief=result=>{
  const copy=structuredClone(result);

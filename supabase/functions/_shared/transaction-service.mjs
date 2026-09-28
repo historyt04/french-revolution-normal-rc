@@ -67,7 +67,7 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
      }
      const backupEnvelope=request.action==='teacher.backup.restoreCopy'?await tx.readBackup(String(p.backupId||'')):undefined;
      const runDomain=()=>execute({tables},request,{pepper,backupKey,now,backupEnvelope,minimalLogin:true,partitionRates:true});
-     const out=tx.measure?tx.measure('domain',runDomain):runDomain();
+     const out=await (tx.measure?tx.measure('domain',runDomain):runDomain());
      if(!isStaff)assertOwnedChanges(out.changes,actor,sessionId,limitIds);
      for(const change of out.changes)if(change.table==='receipts')change.row.result=brief(change.row.result);
      await tx.write(out.changes,out.backups,out.copies);

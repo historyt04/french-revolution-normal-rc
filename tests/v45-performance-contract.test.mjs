@@ -33,6 +33,7 @@ test('v4.5 bounds retry amplification and preserves local quiz batching',async()
  assert.match(api,/Number\(opts\.maxAttempts\)\|\|3/);
  assert.match(api,/role\+'\.login',p,\{maxAttempts:2\}/);
  assert.match(transaction,/new Set\(\['40001','40P01'\]\)/);
+ assert.match(transaction,/const out=await \(tx\.measure\?tx\.measure\('domain',runDomain\):runDomain\(\)\)/);
  assert.doesNotMatch(transaction,/retryableTransactionCodes=new Set\([^\n]*55P03/);
  assert.match(speed,/localQuestions/);
  assert.match(client,/attempt\.quiz\.complete/);

@@ -9,12 +9,18 @@ assert(opening.includes('>1장씩 까기</button>'));assert(opening.includes('>�
 assert(opening.includes("count=chosen==='all'?plan.total:1"),'one-by-one base request must use count 1');
 assert(opening.includes('onclick="toggleOpeningZoom28()" aria-label="카드 확대"'),'revealed card must only toggle the inspection zoom');
 assert(opening.includes("else if(packReward?.phase!=='done')advanceOpening28()"),'Enter must use the explicit advance path');
+assert(opening.includes("packAutoV38=!packAutoV38;render42()"),'all-pack auto opening must be a working toggle');
+assert(opening.includes("last?1000:700"),'auto opening must hold the final card before the result screen');
+assert(opening.includes("if(last)showAllOpening28();else revealNext28()"),'auto opening must finish at the complete result screen');
+assert(opening.includes("e.target.closest?.('.reveal-card28')"),'Enter on the focused revealed card must advance instead of zooming');
 assert(opening.includes("x.isNew?'<b class=\"opening-new28\">NEW</b>'"),'NEW badge must use the server result flag');
 assert(!opening.includes('${escape41(p.note)}'),'pack vault must not render long pack descriptions');
 assert(legacy.includes("name:'노말팩'"));assert(!legacy.includes("name:'노말 확정팩'"));
 assert(legacy.includes('bonusSlotSwapSelection={kind:\'\',index:-1}'),'speedrun must track a placed-card click selection');
 assert(legacy.includes("cl+=' selected'"),'the selected placed card must have a visible state');
 assert(legacy.includes('첫 카드와 두 번째 카드를 차례로 눌러 서로 바꿀 수 있습니다.'),'speedrun instructions must explain click-to-click swapping');
+assert(legacy.includes('rapidBonusTap'),'speedrun cards must detect rapid taps without relying only on native dblclick');
+assert(legacy.includes('now-rapidBonusTap.at<420'),'speedrun rapid-tap window must remain classroom-touch friendly');
 assert(fusion.includes('기본 성공률 ${a.baseSuccess}%'));assert(fusion.includes('광휘 보너스 ${a.shinyBonus}%p'));assert(fusion.includes('광휘 카드가 합성 재료로 소모됩니다.'));
 
 const interaction=legacy.match(/let bonusSlotSwapSelection=.*\n/)[0],place=legacy.match(/function bonusPlace\(k,i\).*\n/)[0];

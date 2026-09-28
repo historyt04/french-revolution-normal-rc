@@ -44,18 +44,34 @@ test('v4.7 bounds retry amplification and preserves local quiz batching',async()
  assert.doesNotMatch(domain,/resultShinyBonus/);
 });
 
-test('v4.7 labels and cache keys are internally consistent',async()=>{
+test('v4.8 RC student labels and changed-asset cache keys are internally consistent',async()=>{
  const [student,teacher,manifest,api]=await Promise.all([
   read('student-preview.html'),read('teacher.html'),read('rc-preview-manifest.json'),read('game-api.js')
  ]);
- assert.match(student,/학습 게임 v4\.7/);
+ assert.match(student,/학습 게임 v4\.8 RC/);
  assert.match(student,/game-api\.js\?v=47-/);
- assert.match(student,/student-v47\.js\?v=47-/);
+ assert.match(student,/student-v42\.js\?v=48-/);
+ assert.match(student,/student-stage28\.js\?v=48-/);
+ assert.match(student,/student-v47\.js\?v=48-/);
  assert.match(teacher,/통합 플랫폼 v4\.7/);
  assert.match(teacher,/game-api\.js\?v=47-/);
  assert.match(teacher,/teacher-v47\.js\?v=47-/);
  assert.equal(JSON.parse(manifest).release,'v4.7-rc-20260928');
  assert.match(api,/version:'4\.7'/);
+});
+
+test('v4.8 RC uses lightweight board and self-only student ranking payloads',async()=>{
+ const [domain,board,student]=await Promise.all([
+  read('supabase/functions/_shared/gas-v6-domain.mjs'),read('board27.js'),read('student-v47.js')
+ ]);
+ assert.match(board,/API\.request\('rankings\.read'/);
+ assert.doesNotMatch(board,/API\.request\('teacher\.board\.read'/);
+ assert.match(student,/selfOnly:true/);
+ assert.match(student,/나의 최고기록/);
+ assert.match(student,/TOP 100 전체 순위는 교실 전광판/);
+ assert.doesNotMatch(student,/우리 반 최고 기록/);
+ assert.match(domain,/selfOnly=p\.selfOnly===true/);
+ assert.match(domain,/classTop:selfOnly\?\[\]/);
 });
 
 test('v4.7 adds cached rankings, TOP 100 filters, and session-only issued-code export',async()=>{

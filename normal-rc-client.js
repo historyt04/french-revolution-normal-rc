@@ -3,16 +3,13 @@
  if(!window.HistoryNormalOutbox)return;
  const namespace=HISTORY_API_CONFIG.rcUrl+'|'+HISTORY_API_CONFIG.rcStorageScope;
  const owner=()=>{const id=api42.session?.user?.id;return id&&api42.session?.role==='student'&&!api42.session?.testOnly&&!state42?.testOnly&&state42?.profile?.id===id?namespace+'|'+id:null};
- const store=new HistoryNormalOutbox.IndexedCompletionStore('history-normal-completions-v1');
- const notices=new Map();let retryTimer=null,loading=true;
+ const store=new HistoryNormalOutbox.IndexedCompletionStore('history-normal-completions-v1'); const notices=new Map();let retryTimer=null,loading=true,loadingPromise=null,loadedOwner='';
  const queue=new HistoryNormalOutbox.CompletionQueue({store,owner,request:(...args)=>api42.request(...args),
   onChange(row){notices.set(row.id,row);const a=attempts42[row.mode];if(a?.clientRequestId===row.clientId){a.syncStatus=row.status;a.syncError=row.lastError||'';if(state42)render42()}schedule()},
   onConfirmed(row,result){const a=attempts42[row.mode];if(!a||a.clientRequestId===row.clientId||a.attemptId===row.active?.attemptId){applyState42(result.student);applyAttempt42(result);render42()}else if(state42){void refresh42().then(()=>render42()).catch(()=>{})}}
  });
  function schedule(){clearTimeout(retryTimer);if(owner()&&[...notices.values()].some(r=>r.owner===owner()&&r.status==='pending'))retryTimer=setTimeout(()=>{void queue.flush().catch(showStorageError)},4000)}
- function showStorageError(){toast42('기기에 완료 기록을 보관하지 못했습니다. 이 화면을 닫지 말고 저장을 다시 시도해 주세요.')}
- async function load(){try{for(const r of await queue.rows())notices.set(r.id,r);loading=false;schedule();void queue.flush().catch(showStorageError)}catch{loading=false;showStorageError()}}
- function pending(){return Object.values(attempts42).some(a=>a.unsavedCompletion||a.syncStatus==='saving')||[...notices.values()].some(r=>r.owner===owner()&&r.status!=='confirmed')}
+ function showStorageError(){toast42('기기에 완료 기록을 보관하지 못했습니다. 이 화면을 닫지 말고 저장을 다시 시도해 주세요.')} async function load(force=false){const who=owner();if(!who){loading=false;return}if(loadingPromise)return loadingPromise;if(!force&&loadedOwner===who){loading=false;schedule();return}loadingPromise=(async()=>{try{for(const r of await queue.rows())notices.set(r.id,r);loadedOwner=who;loading=false;schedule();void queue.flush().catch(showStorageError)}catch{loading=false;showStorageError()}finally{loadingPromise=null}})();return loadingPromise} function pending(){return Object.values(attempts42).some(a=>a.unsavedCompletion||a.syncStatus==='saving')||[...notices.values()].some(r=>r.owner===owner()&&r.status==='pending')}
  function canStart(){if(loading||pending()){toast42('앞 게임의 완료 기록을 먼저 서버에 확인하고 있습니다. 저장 상태를 확인해 주세요.');return false}return true}
  const applyStateBase=applyState42;applyState42=function(s){applyStateBase(s);if(owner())void load()};
  const beginBase=begin42;begin42=function(...args){if(canStart())return beginBase(...args)};
@@ -34,8 +31,7 @@
   const input={clientId,mode:'matching',action:'attempt.match.complete',payload:{moves:clone42(completed.localMoves)},...(a.activationPayload?{activation:clone42(a.activationPayload)}:{active:{attemptId:a.attemptId,revision:a.state.revision}})};
   a.syncStatus='saving';a.status='pending';render42();
   try{await queue.enqueue(input);void queue.flush().catch(showStorageError)}catch{a.unsavedCompletion=input;showStorageError();render42()}
- }
- async function retry(){for(const a of Object.values(attempts42)){if(a.unsavedCompletion){try{await queue.enqueue(a.unsavedCompletion);delete a.unsavedCompletion}catch{showStorageError();return}}}void load()}
+ } async function retry(){for(const a of Object.values(attempts42)){if(a.unsavedCompletion){try{await queue.enqueue(a.unsavedCompletion);delete a.unsavedCompletion}catch{showStorageError();return}}}try{await load(true);await queue.retryBlocked();await queue.flush()}catch{showStorageError()}}
  async function submitDecision(mode,action,payload){
   const a=attempts42[mode];if(!a||a.status!=='active'||a.syncStatus&&a.syncStatus!=='confirmed')return;
   const clientId='decision-'+api42.newRequestId();a.clientRequestId=clientId;
@@ -50,8 +46,7 @@
  // These submissions may need another answer. Announce receipt, not a passed game.
  const decisionDecorate=decorateStage2Body;decorateStage2Body=function(html){const a=attempts42[view];let out=decisionDecorate(html);if(a?.clientRequestId?.startsWith('decision-')&&a.syncStatus&&a.syncStatus!=='confirmed')out=out.replace('학습 완료</h2>','답안 제출 완료</h2>').replaceAll('완료 기록','제출 답안');return out};
  window.HistoryNormalCompletion={submitQuiz,submitMatching,retry};
- addEventListener('beforeunload',event=>{if(Object.values(attempts42).some(a=>a.unsavedCompletion||a.syncStatus==='saving')){event.preventDefault();event.returnValue=''}});
- addEventListener('online',()=>void load());addEventListener('history-session-changed',()=>{loading=true;notices.clear();clearTimeout(retryTimer);if(owner())void load();else loading=false});
+ addEventListener('beforeunload',event=>{if(Object.values(attempts42).some(a=>a.unsavedCompletion||a.syncStatus==='saving')){event.preventDefault();event.returnValue=''}}); addEventListener('online',()=>void load(true));addEventListener('history-session-changed',()=>{loading=true;loadingPromise=null;loadedOwner='';notices.clear();clearTimeout(retryTimer);if(owner())void load();else loading=false});
  addEventListener('history-login-verified',()=>{const status=document.querySelector('#connection42');if(status)status.textContent='학생 확인 완료 · 출석과 학습 상태를 불러옵니다.'});
  if(owner())void load();else loading=false;
 })();

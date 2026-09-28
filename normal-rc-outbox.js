@@ -13,6 +13,7 @@
   constructor({store,owner,request,onChange=()=>{},onConfirmed=()=>{}}){Object.assign(this,{store,owner,request,onChange,onConfirmed});this.running=null}
   async enqueue(input){const owner=this.owner();if(!owner)throw Object.assign(Error('AUTH_REQUIRED'),{code:'AUTH_REQUIRED'});const fingerprint=JSON.stringify(input),id=owner+'|'+input.clientId,prior=await this.store.get(id);if(prior){if(prior.fingerprint!==fingerprint)throw Object.assign(Error('LOCAL_REQUEST_CONFLICT'),{code:'LOCAL_REQUEST_CONFLICT'});this.onChange(prior);return prior}const row={...input,id,owner,fingerprint,status:'pending',createdAt:Date.now(),retries:0};const saved=await this.store.put(row);this.onChange(saved);return saved}
   async rows(){const owner=this.owner();return owner?(await this.store.list(owner)).sort((a,b)=>a.createdAt-b.createdAt):[]}
+  async retryBlocked(){const owner=this.owner();if(!owner)return 0;let count=0;for(const row of await this.rows()){if(row.status!=='blocked')continue;const saved=await this.store.put({...row,status:'pending',lastError:'',manualRetryAt:Date.now()});this.onChange(saved);count++}return count}
   flush(){if(this.running)return this.running;this.running=this.drain().finally(()=>{this.running=null});return this.running}
   async drain(){const owner=this.owner();if(!owner)return;const rows=await this.rows();for(const row of rows){if(row.status!=='pending')continue;if(this.owner()!==owner)return;
    try{

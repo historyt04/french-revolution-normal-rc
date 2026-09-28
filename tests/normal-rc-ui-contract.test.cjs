@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const read=name=>fs.readFileSync(new URL('../'+name,`file://${__filename}`),'utf8');
-const opening=read('student-stage28.js'),legacy=read('legacy-game.js'),fusion=read('student-stage25.js');
+const opening=read('student-stage28.js'),legacy=read('legacy-game.js'),fusion=read('student-stage25.js'),cinematic=read('rc-cinematic.js');
 
 for(const label of ['한 장씩 자동개봉','연속 개봉 시작','연속 개봉 계속','직접 개봉 · 다음 카드'])assert(!opening.includes(label),`obsolete opening label remains: ${label}`);
 assert(opening.includes('>1장씩 까기</button>'));assert(opening.includes('>모두 까기'));
@@ -13,6 +13,8 @@ assert(opening.includes("packAutoV38=!packAutoV38;render42()"),'all-pack auto op
 assert(opening.includes("last?2000:1600"),'auto opening must leave enough time to identify each reward');
 assert(opening.includes("if(last)showAllOpening28();else revealNext28()"),'auto opening must finish at the complete result screen');
 assert(opening.includes("packAutoV38=false;clearTimeout(packAutoTimerV38);return revealNext28()"),'manual Enter/button advance must stop auto opening first');
+assert(cinematic.includes("last?2000:1600"),'cinematic layer must preserve the readable auto-opening delay');
+assert(!cinematic.includes("packReward.phase==='shown'?120:20"),'cinematic layer must not overwrite the readable delay');
 assert(opening.includes("e.target.closest?.('.reveal-card28')"),'Enter on the focused revealed card must advance instead of zooming');
 assert(opening.includes("x.isNew?'<b class=\"opening-new28\">NEW</b>'"),'NEW badge must use the server result flag');
 assert(!opening.includes('${escape41(p.note)}'),'pack vault must not render long pack descriptions');

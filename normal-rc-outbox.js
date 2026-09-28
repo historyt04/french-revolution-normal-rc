@@ -18,7 +18,7 @@
   flush(force=false){if(this.running)return this.running;this.running=this.drain(force).finally(()=>{this.running=null});return this.running}
   async drain(force=false){const owner=this.owner();if(!owner)return;const rows=await this.rows();for(const row of rows){if(row.status!=='pending'||!force&&Number(row.nextRetryAt)>Date.now())continue;if(this.owner()!==owner)return;
    try{
-    const call=async(action,payload,suffix)=>{if(this.owner()!==owner)throw Object.assign(Error('SESSION_CHANGED'),{code:'SESSION_CHANGED'});return this.request(action,payload,{requestId:row.clientId+'-'+suffix,maxAttempts:1,timeoutMs:10000})};
+    const call=async(action,payload,suffix)=>{if(this.owner()!==owner)throw Object.assign(Error('SESSION_CHANGED'),{code:'SESSION_CHANGED'});return this.request(action,payload,{requestId:row.clientId+'-'+suffix,maxAttempts:1,timeoutMs:20000})};
     let active=row.active;
     if(row.prepare){const ready=await call('attempt.prepare',row.prepare,'prepare');active=await call('attempt.activate',{attemptId:ready.attemptId,revision:ready.state.revision},'activate')}
     else if(row.activation)active=await call('attempt.activate',row.activation,'activate');

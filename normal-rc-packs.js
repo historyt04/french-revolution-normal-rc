@@ -15,7 +15,7 @@
   if(starting||busy42||!openPlan42||opening28||!owner())return;
   starting=true;
   try{
-   await load();if(pending.length){toast42('앞서 요청한 카드팩 개봉을 확인 중입니다. 같은 요청으로 다시 확인합니다.');void queue.flush();return}
+   await load();if(pending.length){toast42('카드팩을 여는 중입니다. 잠시만 기다려 주세요.');void queue.flush();return}
    const revealMode=mode||openPlan42.mode||'single',count=revealMode==='all'?openPlan42.total:1;
    const input={clientId:'pack-'+api42.newRequestId(),mode:'pack',action:'cards.openPack',direct:true,payload:{packId:openPlan42.packId,count},revealMode};
    requested=input.clientId;await queue.enqueue(input);toast42('카드팩 개봉을 확인 중입니다. 화면을 다시 열어도 같은 요청으로 확인합니다.');void queue.flush().catch(storageError);

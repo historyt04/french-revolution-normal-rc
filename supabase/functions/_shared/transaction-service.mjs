@@ -35,7 +35,7 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
    for(let retry=0;retry<2;retry++){
     try{return await database.transaction(async tx=>{
      const p=request.payload||{},login=request.action==='student.login'||request.action==='teacher.login',recovery=request.action==='owner.recover';
-     let actor,sessionId='',isStaff=false;
+     let actor,sessionId='',isStaff=false,sessionRole='';
      if(login||recovery){
       if(login)invariant(typeof p.code==='string'&&p.code.length<=150,'INVALID_INPUT');
       if(request.action==='student.login'){
@@ -50,13 +50,20 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
       const session=await tx.session(hash(request.token));
       invariant(session&&!session.revokedAt&&Date.parse(session.expiresAt)>now(),'SESSION_EXPIRED');
       actor=session.role==='teacherTest'?'TEST:'+session.userId:session.userId;
-      sessionId=session.id;isStaff=staffRoles.has(session.role);
+      sessionId=session.id;sessionRole=session.role;isStaff=staffRoles.has(session.role);
       // Reject privileged actions before fetching any staff data.
       invariant(isStaff||!request.action.startsWith('teacher.')&&!request.action.startsWith('owner.'),'FORBIDDEN');
      }
      // Shared configuration lock is compatible across all students. Only staff
      // operations use exclusive mode; no classroom-wide student write lock.
      await tx.lock(actor,isStaff&&!sharedStaffActions.has(request.action));
+     // These two high-frequency actions touch only one student's small rows.
+     // Keep their existing validation/idempotence semantics without loading the
+     // entire 65-table game snapshot.
+     if(sessionRole==='student'&&tx.fastAction&&['cards.openings.ack','attempt.abandon'].includes(request.action)){
+      const fast=await tx.fastAction(request.action,actor,p);
+      if(fast!==undefined)return{ok:true,data:fast};
+     }
      const limitIds=[sessionId,sessionId+':openings28','reports27:'+actor,'board27:'+actor,'csv27:'+actor,'test-ready:'+actor,'login:'+(isStaff?'teacher':'student')+':'+actor,...(recovery?['owner-recovery-global','owner-recovery:'+actor]:[])].map(key=>hash('rate:'+key));
      const tables=await tx.load(actor,sessionId,request.requestId,request.action,isStaff,limitIds,p);
      const fp=digest({action:request.action,payload:p});

@@ -2,6 +2,7 @@ import {execute,gasHash,validateRequest} from './rc-service.mjs';
 import {invariant,digest,sealBackup,openBackup} from './rc-data.mjs';
 
 const staffRoles=new Set(['teacher','owner','teacherTest']);
+const retryableTransactionCodes=new Set(['40001','40P01']);
 // These staff operations only read shared/student data and write their own
 // session, receipt, audit or backup rows. Configuration changes remain exclusive.
 const sharedStaffActions=new Set(['teacher.login','teacher.overview','teacher.student.cards','teacher.records.read','teacher.records.student','teacher.records.settings','teacher.records.csv','teacher.scope.read','teacher.backup.create','teacher.backup.restoreCopy','teacher.test.check','portal.read','access.check','rankings.read','session.logout']);
@@ -31,7 +32,7 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
    const ticket=request.ticket;
    invariant(ticket&&ticket.expiresAt>=now()&&ticket.expiresAt<=now()+121000&&typeof ticket.nonce==='string'&&ticket.nonce.length<=300&&ticket.signature===hash('ticket:'+ticket.expiresAt+':'+ticket.nonce),'REQUEST_EXPIRED');
    invariant(typeof request.requestId==='string'&&/^[\w-]{12,100}$/.test(request.requestId),'INVALID_REQUEST');
-   for(let retry=0;retry<3;retry++){
+   for(let retry=0;retry<2;retry++){
     try{return await database.transaction(async tx=>{
      const p=request.payload||{},login=request.action==='student.login'||request.action==='teacher.login',recovery=request.action==='owner.recover';
      let actor,sessionId='',isStaff=false;
@@ -65,14 +66,15 @@ export function makeTransactionalService({database,pepper,backupKey,now=()=>Date
       if(prior){invariant(prior.body_hash===fp,'REQUEST_CONFLICT');return {...openBackup(prior.envelope,backupKey).response,replayed:true};}
      }
      const backupEnvelope=request.action==='teacher.backup.restoreCopy'?await tx.readBackup(String(p.backupId||'')):undefined;
-     const out=execute({tables},request,{pepper,backupKey,now,backupEnvelope,minimalLogin:true,partitionRates:true});
+     const runDomain=()=>execute({tables},request,{pepper,backupKey,now,backupEnvelope,minimalLogin:true,partitionRates:true});
+     const out=tx.measure?tx.measure('domain',runDomain):runDomain();
      if(!isStaff)assertOwnedChanges(out.changes,actor,sessionId,limitIds);
      for(const change of out.changes)if(change.table==='receipts')change.row.result=brief(change.row.result);
      await tx.write(out.changes,out.backups,out.copies);
      if(login&&out.result.ok)await tx.saveLoginReceipt(actor,request.requestId,fp,sealBackup({response:out.result},backupKey));
      return out.result;
     });}catch(error){
-     if(['40001','40P01','55P03'].includes(error.code)&&retry<2)continue;
+     if(retryableTransactionCodes.has(error.code)&&retry<1){await new Promise(resolve=>setTimeout(resolve,25+Math.random()*50));continue;}
      throw error;
     }
    }

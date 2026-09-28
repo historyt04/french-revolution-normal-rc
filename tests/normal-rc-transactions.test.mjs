@@ -110,8 +110,8 @@ const allResumed=success(await service(req('cards.openings.read',{openingId:allO
 assert((await service(allRequest)).replayed);assert.equal(packAmount(student1.user.id,'premium'),0,'replaying all mode must not grant or subtract again');
 success(await service(req('teacher.gift',{scope:'student',studentId:student1.user.id,schoolYear:2026,grade:2,classNo:98,unitId:rules.unitId,kind:'pack',packId:'myth',count:15,reason:'NEW persistence regression'},teacher.token)));
 const newSequence=[];for(let i=0;i<15;i++)newSequence.push(success(await service(req('cards.openPack',{packId:'myth',count:1},student1.token))));
-const firstNew=newSequence[0],secondNew=newSequence.at(-1);
-assert.equal(firstNew.cards[0].isNew,true);assert.equal(secondNew.cards[0].isNew,false,'an already-owned card variant must not be NEW');
+const firstNew=newSequence[0],secondNew=newSequence.find(x=>x.cards[0].isNew===false);
+assert.equal(firstNew.cards[0].isNew,true);assert(secondNew,'at least one repeated card variant must be produced');assert.equal(secondNew.cards[0].isNew,false,'an already-owned card variant must not be NEW');
 const reopenedNew=success(await service(req('cards.openings.read',{openingId:firstNew.opening.id},student1.token)));
 assert.equal(reopenedNew.opening.cards[0].isNew,true,'resume must preserve the server NEW decision');
 const cardKey=(eventId,rarity)=>`${student1.user.id}:${rules.unitId}:${eventId}:${rarity}`;
@@ -123,7 +123,7 @@ for(let eventId=1;eventId<=6;eventId++){
 }
 const normalMaterial=eventId=>({eventId,rarity:'normal',effect:'normal'}),glowMaterial=eventId=>({eventId,rarity:'normal',effect:'01'});
 const oneGlow=success(await service(req('cards.synthesize',{materials:[glowMaterial(1),normalMaterial(2),normalMaterial(3),normalMaterial(4),normalMaterial(5)]},student1.token)));
-assert.equal(oneGlow.odds.shinyMaterials,1);assert.equal(oneGlow.odds.shinyBonus,5);assert.equal(oneGlow.odds.finalSuccess,Math.min(100,oneGlow.odds.baseSuccess+5));assert.equal(oneGlow.card.shiny,false,'glow material must not add to the result glow chance');
+assert.equal(oneGlow.odds.shinyMaterials,1);assert.equal(oneGlow.odds.shinyBonus,5);assert.equal(oneGlow.odds.finalSuccess,Math.min(100,oneGlow.odds.baseSuccess+5));assert.equal(Object.hasOwn(oneGlow.odds,'resultShinyBonus'),false,'glow material must not add a separate result-glow bonus');
 const fourGlowRequest=req('cards.synthesize',{materials:[glowMaterial(1),glowMaterial(2),glowMaterial(3),glowMaterial(4),normalMaterial(5)]},student1.token);
 const fourGlow=success(await service(fourGlowRequest));assert.equal(fourGlow.odds.shinyMaterials,4);assert.equal(fourGlow.odds.shinyBonus,20);assert.equal(fourGlow.odds.finalSuccess,Math.min(100,fourGlow.odds.baseSuccess+20));
 const afterFourGlow=tables.cardVariants.filter(x=>x.studentId===student1.user.id).reduce((n,x)=>n+x.count,0);

@@ -24,7 +24,7 @@ class Store{
  let queue=make();const input={clientId:'stable-request',mode:'beginner',action:'attempt.quiz.complete',prepare:{mode:'beginner',questionIds:['q1'],restart:true},payload:{submissions:[{questionId:'q1',answer:'answer'}]}};
  await queue.enqueue(input);await queue.flush();assert.equal(effects,1);assert.equal((await queue.rows())[0].status,'pending');
  // Closing and reopening the page with a NEW session uses the same student-owned queue.
- queue=make();await Promise.all([queue.flush(),queue.flush()]);assert.equal(effects,1);assert.equal(confirmed,1);assert.equal((await queue.rows())[0].status,'confirmed');
+ queue=make();const callsBeforeBackoff=calls.length;await queue.flush();assert.equal(calls.length,callsBeforeBackoff);assert.equal((await queue.rows())[0].status,'pending');await Promise.all([queue.flush(true),queue.flush(true)]);assert.equal(effects,1);assert.equal(confirmed,1);assert.equal((await queue.rows())[0].status,'confirmed');
  for(const action of ['attempt.prepare','attempt.activate','attempt.quiz.complete'])assert.equal(new Set(calls.filter(c=>c.action===action).map(c=>c.id)).size,1);
  await assert.rejects(()=>queue.enqueue({...input,payload:{submissions:[]}}),e=>e.code==='LOCAL_REQUEST_CONFLICT');
  owner='student-B';assert.deepEqual(await queue.rows(),[]);const count=calls.length;await queue.flush();assert.equal(calls.length,count);
@@ -32,21 +32,24 @@ class Store{
  store.failNext=true;await assert.rejects(()=>queue.enqueue({...input,clientId:'no-disk'}));await queue.flush();assert.equal(calls.length,count);
  // Logout while activation is in flight cannot complete under the next student's session.
  let switchCalls=0;const switchQueue=new CompletionQueue({store,owner:()=>owner,request:async()=>{switchCalls++;owner='student-C';return {attemptId:'attempt-B',state:{revision:0}}}});
- await switchQueue.enqueue({...input,clientId:'switch'});await switchQueue.flush();assert.equal(switchCalls,1);assert.equal((await store.list('student-B'))[0].status,'pending');
+ await switchQueue.enqueue({...input,clientId:'switch'});await switchQueue.flush();assert.equal(switchCalls,1);assert.equal((await store.list('student-B'))[0].status,'blocked');
  // Terminal validation failures retain the original transcript for review.
  owner='student-C';const invalidQueue=new CompletionQueue({store,owner:()=>owner,request:async()=>{throw Object.assign(Error('invalid'),{code:'INVALID_TRANSCRIPT'})}});
  await invalidQueue.enqueue({...input,clientId:'invalid'});await invalidQueue.flush();const blocked=(await invalidQueue.rows())[0];assert.equal(blocked.status,'blocked');assert.deepEqual(blocked.payload,input.payload);
  // A local confirmation write failure causes a replay, not another server effect.
  owner='student-D';let writes=0;const diskQueue=new CompletionQueue({store,owner:()=>owner,request:async(action,payload,opts)=>{const result=await request(action,payload,opts);if(action==='attempt.quiz.complete'&&writes++===0)store.failNext=true;return result}});
- await diskQueue.enqueue({...input,clientId:'confirm-disk-failure'});await diskQueue.flush();assert.equal((await diskQueue.rows())[0].status,'pending');const before=effects;await diskQueue.flush();assert.equal(effects,before);assert.equal((await diskQueue.rows())[0].status,'confirmed');
+ await diskQueue.enqueue({...input,clientId:'confirm-disk-failure'});await diskQueue.flush();assert.equal((await diskQueue.rows())[0].status,'pending');const before=effects;await diskQueue.flush(true);assert.equal(effects,before);assert.equal((await diskQueue.rows())[0].status,'confirmed');
  // A pack request is durable across logout/relogin and a response lost after commit.
  owner='pack-owner';let packEffects=0,packLost=true,openingId;const packReceipts=new Map();
  const packRequest=async(action,payload,opts)=>{assert.equal(action,'cards.openPack');assert.deepEqual(payload,{packId:'basic',count:3});if(packReceipts.has(opts.requestId))return packReceipts.get(opts.requestId);packEffects++;const out={opening:{id:'opening-once'},cards:[1,2,3]};packReceipts.set(opts.requestId,out);if(packLost){packLost=false;throw Error('response lost')}return out};
  const packOptions={store,owner:()=>owner,request:packRequest,onConfirmed:(_,r)=>{openingId=r.opening.id}};
  let packs=new CompletionQueue(packOptions);await packs.enqueue({clientId:'durable-pack-id',mode:'pack',direct:true,action:'cards.openPack',payload:{packId:'basic',count:3}});await packs.flush();assert.equal(packEffects,1);
- owner='other-pack-owner';await packs.flush();assert.equal(packEffects,1);owner='pack-owner';packs=new CompletionQueue(packOptions);await packs.flush();assert.equal(packEffects,1);assert.equal(openingId,'opening-once');assert.equal((await packs.rows())[0].openingId,openingId);
+ owner='other-pack-owner';await packs.flush();assert.equal(packEffects,1);owner='pack-owner';packs=new CompletionQueue(packOptions);await packs.flush(true);assert.equal(packEffects,1);assert.equal(openingId,'opening-once');assert.equal((await packs.rows())[0].openingId,openingId);
  // Server judgement can return an active attempt after an incorrect arrangement.
  owner='decision-owner';let decision;const decisions=new CompletionQueue({store,owner:()=>owner,request:async()=>({attemptId:'order-attempt',mode:'speedrun',status:'active',state:{revision:2}}),onConfirmed:(_,r)=>{decision=r}});
  await decisions.enqueue({clientId:'order-submission',mode:'speedrun',action:'attempt.order',active:{attemptId:'order-attempt',revision:1},payload:{slots:[2,1]}});await decisions.flush();assert.equal(decision.status,'active');assert.equal((await decisions.rows())[0].status,'confirmed');
- console.log('PASS: response loss, page reload, session isolation, ID conflicts, local write failure, terminal transcript retention, confirmation replay, durable pack opening, active judgement response');
+ // Authentication failures stop automatic retries until the student explicitly retries.
+ owner='auth-owner';let authCalls=0;const authQueue=new CompletionQueue({store,owner:()=>owner,request:async()=>{authCalls++;throw Object.assign(Error('expired'),{code:'SESSION_EXPIRED'})}});
+ await authQueue.enqueue({...input,clientId:'expired-session'});await authQueue.flush();assert.equal((await authQueue.rows())[0].status,'blocked');await authQueue.flush(true);assert.equal(authCalls,1);await authQueue.retryBlocked();await authQueue.flush(true);assert.equal(authCalls,2);
+ console.log('PASS: response loss, retry backoff, page reload, session isolation, ID conflicts, local write failure, terminal transcript retention, confirmation replay, durable pack opening, active judgement response, auth retry pause');
 })().catch(e=>{console.error(e);process.exitCode=1});

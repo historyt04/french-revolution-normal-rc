@@ -22,7 +22,7 @@ function page(who='A'){
  await Promise.all([a.context.beginOpening28(),a.context.beginOpening28()]);await settle();assert.equal(effects,1,'double click makes one request');assert.equal(a.attached.length,0);
  assert.equal(a.requests[0].count,1,'one-by-one mode requests exactly one pack even when ten are held');
  const b=page('B');await settle();assert.equal(effects,1,'different student cannot recover another student opening');
- const reopened=page();await settle();assert.equal(effects,1,'reopened page replays rather than spends');assert([...rows.values()].every(r=>r.status==='confirmed'));assert(reopened.messages.some(x=>x.includes('개봉 결과를 확인')));
+ const reopened=page();await settle();await reopened.context.HistoryNormalPacks.retry();await settle();assert.equal(effects,1,'reopened page replays rather than spends');assert([...rows.values()].every(r=>r.status==='confirmed'));assert(reopened.messages.some(x=>x.includes('개봉 결과를 확인')));
  const c=page('C');c.context.openPlan42={packId:'basic',total:10,mode:'all'};await settle();await c.context.beginOpening28('all');await settle();assert.equal(c.requests.at(-1).count,10,'all mode fixes the full selected quantity in one request');
  console.log('PASS: pack UI one-by-one count, all count, save failure, double click, response loss, different student, page reopen without second spend');
 })().catch(e=>{console.error(e);process.exitCode=1});

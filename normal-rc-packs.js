@@ -7,7 +7,7 @@
   onChange(row){pending=pending.filter(x=>x.id!==row.id);if(row.owner===owner()&&row.status!=='confirmed')pending.push(row);schedule()},
   onConfirmed(row,result){if(!owner())return;applyState42(result.student);if(requested===row.clientId){requested=null;attachOpening28(result.opening,row.revealMode)}else{render42();toast42('카드팩 개봉 결과를 확인했습니다. 보관함에서 이어서 볼 수 있습니다.')}}
  });
- function schedule(){clearTimeout(timer);if(owner()&&pending.some(x=>x.status==='pending'))timer=setTimeout(()=>void queue.flush().catch(storageError),4000)}
+ function schedule(){clearTimeout(timer);const now=Date.now(),rows=pending.filter(x=>x.owner===owner()&&x.status==='pending');if(rows.length){const delay=Math.max(250,Math.min(...rows.map(r=>Math.max(0,(Number(r.nextRetryAt)||now+4000)-now))));timer=setTimeout(()=>void queue.flush().catch(storageError),delay)}}
  function storageError(){toast42('개봉 요청을 기기에 보관하지 못했습니다. 저장 공간을 확인해 주세요. 저장 전에는 팩을 차감하지 않습니다.')} function load(force=false){if(loading)return loading;const who=owner();if(!who)return Promise.resolve();if(!force&&loadedOwner===who)return Promise.resolve();loading=(async()=>{const rows=await queue.rows();if(who!==owner())return;pending=rows.filter(x=>x.status!=='confirmed');loadedOwner=who;schedule();void queue.flush().catch(storageError)})().catch(storageError).finally(()=>{loading=null});return loading}
  const beginBase=beginOpening28;
  beginOpening28=async function(mode){
@@ -22,6 +22,6 @@
   }catch{storageError()}finally{starting=false}
  };
  const vaultBase=packVaultV38;packVaultV38=function(){return (pending.length?'<section role="status"><p>카드팩 개봉 요청을 확인 중입니다. 아직 결과가 표시되지 않아도 새 팩을 다시 차감하지 않습니다.</p><button class="btn alt" onclick="HistoryNormalPacks.retry()">개봉 결과 다시 확인</button></section>':'')+vaultBase()};
- const applyBase=applyState42;applyState42=function(s){applyBase(s);if(owner())void load()}; async function retry(){try{await load(true);await queue.retryBlocked();await queue.flush()}catch{storageError()}}
- addEventListener('online',()=>void load(true)); addEventListener('history-session-changed',()=>{pending=[];requested=null;loadedOwner='';clearTimeout(timer)}); window.HistoryNormalPacks={retry};if(owner())void load();
+ const applyBase=applyState42;applyState42=function(s){applyBase(s);if(owner())void load()}; async function retry(){try{await load(true);await queue.retryBlocked();await queue.flush(true)}catch{storageError()}}
+ addEventListener('online',()=>void load(true).then(()=>queue.flush(true)).catch(storageError)); addEventListener('history-session-changed',()=>{pending=[];requested=null;loadedOwner='';clearTimeout(timer)}); window.HistoryNormalPacks={retry};if(owner())void load();
 })();

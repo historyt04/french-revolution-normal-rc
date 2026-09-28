@@ -51,7 +51,7 @@ test('v4.8 RC student labels and changed-asset cache keys are internally consist
  assert.match(student,/학습 게임 v4\.8 RC/);
  assert.match(student,/game-api\.js\?v=47-/);
  assert.match(student,/student-v42\.js\?v=48-/);
- assert.match(student,/student-stage28\.js\?v=48-/);
+ assert.match(student,/student-stage28\.js\?v=49-/);
  assert.match(student,/student-v47\.js\?v=48-/);
  assert.match(teacher,/통합 플랫폼 v4\.7/);
  assert.match(teacher,/game-api\.js\?v=47-/);
@@ -72,6 +72,21 @@ test('v4.8 RC uses lightweight board and self-only student ranking payloads',asy
  assert.doesNotMatch(student,/우리 반 최고 기록/);
  assert.match(domain,/selfOnly=p\.selfOnly===true/);
  assert.match(domain,/classTop:selfOnly\?\[\]/);
+});
+
+test('v4.9 RC board shows real names, explicit class scope, and readable filters',async()=>{
+ const [board,css,html]=await Promise.all([read('board27.js'),read('rc-board.css'),read('board.html')]);
+ assert.match(board,/row\.student\?\.name\|\|row\.student\?\.nickname/);
+ assert.match(board,/name="rankingFilterScope"/);
+ assert.match(board,/>전체 학생</);
+ assert.match(board,/>특정 학년</);
+ assert.match(board,/>특정 반</);
+ assert.match(board,/rankingFilterScope==='class'/);
+ assert.match(board,/scopeLabel\+' · '\+result\.periodLabel/);
+ assert.match(css,/-webkit-text-fill-color:#172d37!important/);
+ assert.match(css,/input:disabled/);
+ assert.match(html,/rc-board\.css\?v=49-/);
+ assert.match(html,/board27\.js\?v=49-/);
 });
 
 test('v4.7 adds cached rankings, TOP 100 filters, and session-only issued-code export',async()=>{

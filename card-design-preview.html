@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>역사 카드 7종 디자인 미리보기</title>
+  <link rel="stylesheet" href="card-design-preview.css">
+</head>
+<body>
+  <header class="preview-head">
+    <div>
+      <p class="eyebrow">HISTORY CARD LAB</p>
+      <h1>카드 프레임 7종 미리보기</h1>
+      <p>실제 카드 그림·문구·등급을 넣은 HTML/CSS 시안입니다. 카드를 움직이거나 터치해 보세요.</p>
+    </div>
+    <div class="controls" aria-label="미리보기 설정">
+      <label>광택 <input id="shineRange" type="range" min="0" max="100" value="82"></label>
+      <button id="motionToggle" type="button" aria-pressed="true">자동 광택 켜짐</button>
+    </div>
+  </header>
+
+  <main class="card-grid" id="cardGrid"></main>
+
+  <template id="cardTemplate">
+    <article class="card-wrap">
+      <div class="history-card" tabindex="0">
+        <div class="card-aura"></div>
+        <div class="card-surface">
+          <div class="card-image"></div>
+          <div class="image-vignette"></div>
+          <div class="foil foil-spectrum"></div>
+          <div class="foil foil-sweep"></div>
+          <div class="foil foil-stars"></div>
+          <div class="frame">
+            <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+            <i class="rail left"></i><i class="rail right"></i>
+            <i class="gem top"></i><i class="gem bottom"></i>
+          </div>
+          <div class="card-title">
+            <small class="card-no">FR-04</small>
+            <strong>바스티유 감옥 습격</strong>
+          </div>
+          <div class="card-info">
+            <div class="year">1789</div>
+            <div class="divider"><span></span></div>
+            <p>파리 시민들이 구체제의 억압을 상징하던 바스티유 감옥을 습격하였다.</p>
+            <div class="rarity-row"><b class="rarity-name"></b><span class="stars">✦ ✦ ✦</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="caption"><strong></strong><span></span></div>
+    </article>
+  </template>
+
+  <script src="card-design-preview.js"></script>
+</body>
+</html>

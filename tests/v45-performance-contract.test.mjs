@@ -13,7 +13,7 @@ test('v4.6 reduces database round trips without changing the isolated schema',as
  assert.match(edge,/history_v5\.load_scope_v46/);
  assert.match(edge,/Server-Timing/);
  assert.match(edge,/event:'normal-rc-slow'/);
- assert.match(edge,/postgres\(connectionString,\{prepare:false,max:1/);
+ assert.match(edge,/postgres\(connectionString,\{prepare:false,max:4/);
  assert.doesNotMatch(edge,/6543/);
  assert.match(migration,/create or replace function history_v5\.load_shared_v46/);
  assert.match(migration,/create or replace function history_v5\.load_scope_v46/);

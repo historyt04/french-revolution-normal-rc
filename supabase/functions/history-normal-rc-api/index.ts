@@ -2,13 +2,26 @@ import postgres from 'npm:postgres@3.4.7';
 import {makeTransactionalService} from '../_shared/transaction-service.mjs';
 import {publicBootstrap} from '../_shared/rc-service.mjs';
 
-const connectionString=Deno.env.get('HISTORY_RC_DB_POOL_URL')||Deno.env.get('SUPABASE_DB_URL');
+const projectRef='mrrvuknoxkpowlqcwahk';
+const databaseRegion='ap-northeast-2';
+const pooledConnection=(value:string|null)=>{
+ if(!value)return null;
+ try{
+  const url=new URL(value),direct=url.hostname===`db.${projectRef}.supabase.co`,shared=url.hostname.endsWith('.pooler.supabase.com');
+  if(direct){url.hostname=`aws-0-${databaseRegion}.pooler.supabase.com`;url.username=`postgres.${projectRef}`;url.port='6543';}
+  else if(shared)url.port='6543';
+  return url.href;
+ }catch{return value;}
+};
+// Edge/serverless traffic must use Supavisor transaction mode. A direct or
+// session-pooled connection lets every isolate reserve a database connection.
+const connectionString=pooledConnection(Deno.env.get('HISTORY_RC_DB_POOL_URL')||Deno.env.get('SUPABASE_DB_URL'));
 const pepper=Deno.env.get('HISTORY_RC_LEGACY_PEPPER');
 const keyString=Deno.env.get('HISTORY_RC_BACKUP_KEY');
 const backupKey=keyString?Uint8Array.from(atob(keyString),c=>c.charCodeAt(0)):null;
-// Edge isolates scale horizontally. Keep each isolate to one client connection so
-// a classroom burst cannot multiply into a direct-Postgres connection storm.
-const sql=connectionString?postgres(connectionString,{prepare:false,max:1,idle_timeout:30,connect_timeout:10,max_lifetime:300}):null;
+// The pooled endpoint protects PostgreSQL. Four bounded lanes prevent unrelated
+// students in one warm Edge isolate from blocking each other during class bursts.
+const sql=connectionString?postgres(connectionString,{prepare:false,max:4,idle_timeout:20,connect_timeout:8,max_lifetime:180}):null;
 const SHARED_TTL_MS=4000;
 let sharedCache:{at:number,tables:Record<string,unknown[]>}|null=null;
 type Timings=Record<string,number>;

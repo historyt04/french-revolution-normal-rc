@@ -14,7 +14,8 @@ test('v4.6 reduces database round trips without changing the isolated schema',as
  assert.match(edge,/Server-Timing/);
  assert.match(edge,/event:'normal-rc-slow'/);
  assert.match(edge,/postgres\(connectionString,\{prepare:false,max:4/);
- assert.doesNotMatch(edge,/6543/);
+ assert.match(edge,/url\.port='6543'/);
+ assert.doesNotMatch(edge,/url\.port='5432'/);
  assert.match(migration,/create or replace function history_v5\.load_shared_v46/);
  assert.match(migration,/create or replace function history_v5\.load_scope_v46/);
  assert.match(migration,/grant execute on function history_v5\.load_scope_v46[\s\S]*to history_v5_worker/);

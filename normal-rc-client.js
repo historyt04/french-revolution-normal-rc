@@ -3,6 +3,22 @@
  if(!window.HistoryNormalOutbox)return;
  const namespace=HISTORY_API_CONFIG.rcUrl+'|'+HISTORY_API_CONFIG.rcStorageScope;
  const owner=()=>{const id=api42.session?.user?.id;return id&&api42.session?.role==='student'&&!api42.session?.testOnly&&!state42?.testOnly&&state42?.profile?.id===id?namespace+'|'+id:null};
+ const applyFullAttempt=applyAttempt42;
+ applyAttempt42=function(result){
+  if(!result?.completion)return applyFullAttempt(result);
+  const previous=attempts42[result.mode],change=result.completion;
+  if(state42){
+   if(change.completedStage)state42.completed[change.completedStage]=true;
+   for(const mode of change.newlyUnlocked||[])state42.unlocked[mode]=true;
+   if(change.bestMs!==null&&change.bestMs!==undefined)state42.best[result.mode]=change.bestMs;
+   if(!change.duplicate)for(const reward of change.rewards?.packs||[]){let held=state42.packs.find(pack=>pack.packId===reward.packId);if(!held){held={id:state42.profile.id+':fr-revolution:'+reward.packId,studentId:state42.profile.id,unitId:'fr-revolution',packId:reward.packId,count:0};state42.packs.push(held)}held.count+=reward.count}
+   writeStateCache42(state42);
+  }
+  if(!previous?.state){void refresh42().then(render42).catch(()=>{});return}
+  const state={...previous.state,...result.outcome,rewardResult:change.rewards,status:result.status},view={...previous,...result,state,completionReward:change.rewards};
+  applyFullAttempt(view);
+  void refresh42().then(render42).catch(()=>{});
+ };
  const store=new HistoryNormalOutbox.IndexedCompletionStore('history-normal-completions-v1'); const notices=new Map();let retryTimer=null,loading=true,loadingPromise=null,loadedOwner='';
  const queue=new HistoryNormalOutbox.CompletionQueue({store,owner,request:(...args)=>api42.request(...args),
   onChange(row){notices.set(row.id,row);const a=attempts42[row.mode];if(a?.clientRequestId===row.clientId){a.syncStatus=row.status;a.syncError=row.lastError||'';if(state42)render42()}schedule()},

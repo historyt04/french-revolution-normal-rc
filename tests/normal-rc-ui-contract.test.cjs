@@ -27,7 +27,7 @@ assert(legacy.includes('now-rapidBonusTap.at<520'),'speedrun rapid-tap window mu
 assert(!legacy.includes("setTimeout(()=>{if(rapidBonusTap.kind===k&&rapidBonusTap.id===id)rapidBonusTap="),'single-click feedback must not erase the rapid-tap window early');
 assert(fusion.includes('기본 성공률 ${a.baseSuccess}%'));assert(fusion.includes('광휘 보너스 ${a.shinyBonus}%p'));assert(fusion.includes('광휘 카드가 합성 재료로 소모됩니다.'));
 
-const interaction=legacy.match(/let bonusSlotSwapSelection=.*\n/)[0],place=legacy.match(/function bonusPlace\(k,i\).*\n/)[0];
+const interaction=legacy.match(/let bonusSlotSwapSelection=[^\r\n]*\r?\n/)[0],place=legacy.match(/function bonusPlace\(k,i\)[^\r\n]*\r?\n/)[0];
 const context={speed:{slots:[1,2,null],deck:[3],selected:null,checked:true,status:'active',startedAt:0},practice:{state:null},dragging:false,cardTimer:0,performance:{now:()=>1000},clearTimeout:()=>{},setTimeout:fn=>fn(),render:()=>{},queueSpeedJudge:()=>{}};
 context.bonusState=kind=>kind==='speedrun'?context.speed:context.practice.state;
 vm.createContext(context);vm.runInContext(interaction+place,context);

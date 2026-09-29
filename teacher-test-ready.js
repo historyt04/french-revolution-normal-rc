@@ -10,8 +10,9 @@ students=function(){return studentsReadyBase()+`<section class="panel"><h2>학�
 function loadDevicesReady(e){e.preventDefault();loadStudentDevicesReady(new FormData(e.target).get('studentId'))}
 function loadStudentDevicesReady(studentId){task(async()=>{readyDevices=await API.request('teacher.devices.read',{studentId});render()})}
 function revokeDeviceReady(i){const s=readyDevices?.devices[i];if(!s)return;const reason=prompt('로그인 종료 사유 (예: 기기 분실)');if(!reason||!confirm('이 기기의 로그인을 종료할까요?'))return;task(async()=>{await API.request('teacher.device.revoke',{studentId:readyDevices.studentId,sessionId:s.sessionId,reason,confirmed:true});readyDevices=await API.request('teacher.devices.read',{studentId:readyDevices.studentId});render()})}
-function rotateStudentReady(studentId=readyDevices?.studentId){if(!studentId)return;task(async()=>{const r=await API.request('teacher.student.code.rotate',{studentId,confirmed:true});if(r.code){studentSecretReady={studentId:r.studentId,code:r.code};studentSecretsReady.set(r.studentId,{studentId:r.studentId,code:r.code,issuedAt:new Date().toISOString()})}if(readyDevices?.studentId===studentId)readyDevices=await API.request('teacher.devices.read',{studentId});render();msg('새 접속코드를 발급했습니다. 이 로그인 동안 계속 확인할 수 있습니다.')})}
-addEventListener('history-session-changed',()=>{readySettings=null;readyDevices=null;studentSecretReady=null;if(!API.session?.token)studentSecretsReady.clear()});
+function rotateStudentReady(studentId=readyDevices?.studentId){if(!studentId)return;task(async()=>{const r=await API.request('teacher.student.code.rotate',{studentId,confirmed:true});if(r.code){studentSecretReady={studentId:r.studentId,code:r.code};rememberIssuedCodes47([{student:{id:r.studentId},code:r.code}])}if(readyDevices?.studentId===studentId)readyDevices=await API.request('teacher.devices.read',{studentId});render();msg('새 접속코드를 발급했습니다. 이 로그인 동안 계속 확인할 수 있습니다.')})}
+let issuedCodesSession=API.session?.token||null;
+addEventListener('history-session-changed',()=>{readySettings=null;readyDevices=null;studentSecretReady=null;const current=API.session?.token||null;if(current!==issuedCodesSession){studentSecretsReady.clear();created=[];issuedCodesSession=current}});
 
 /* Owner-controlled authorship notice. Every authenticated scope receives a stable trace ID. */
 const settingsCopyrightBase=settings;

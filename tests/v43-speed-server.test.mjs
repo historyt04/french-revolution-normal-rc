@@ -125,7 +125,7 @@ for(let round=0;round<5;round++){
   connection=await loginBatch({action:'attempt.board.submit',payload:{attemptId:connection.data.attemptId,revision:connection.data.state.revision,placements:{middle:connection.data.state.connectionRound.middle}},requestId:`connection-round-${round+1}`,ticket:loginTicket,token:loginResults[0].data.token});
   assert.equal(connection.ok,true);
 }
-assert(['completed','review'].includes(connection.data.status));assert.equal(connection.data.state.connectionDone.length,5);
+assert(['completed','review'].includes(connection.data.status));assert(connection.data.completion);assert.equal(connection.data.state,undefined);
 let advancedConnection=await loginBatch({action:'attempt.prepare',payload:{mode:'connections',variant:'advanced',restart:true},requestId:'connection-advanced-prepare',ticket:loginTicket,token:loginResults[0].data.token});
 assert.equal(advancedConnection.ok,true);assert.equal(advancedConnection.data.state.connectionTotal,5);
 advancedConnection=await loginBatch({action:'attempt.activate',payload:{attemptId:advancedConnection.data.attemptId,revision:advancedConnection.data.state.revision},requestId:'connection-advanced-activate',ticket:loginTicket,token:loginResults[0].data.token});
@@ -134,7 +134,7 @@ for(let round=0;round<5;round++){
   advancedConnection=await loginBatch({action:'attempt.board.submit',payload:{attemptId:advancedConnection.data.attemptId,revision:advancedConnection.data.state.revision,placements:{previous:expected.previous,next:expected.next}},requestId:`connection-advanced-round-${round+1}`,ticket:loginTicket,token:loginResults[0].data.token});
   assert.equal(advancedConnection.ok,true);
 }
-assert(['completed','review'].includes(advancedConnection.data.status));assert.equal(advancedConnection.data.state.connectionDone.length,5);
+assert(['completed','review'].includes(advancedConnection.data.status));assert(advancedConnection.data.completion);assert.equal(advancedConnection.data.state,undefined);
 const loginStats=loginStore.stats();
 assert(loginStats.loads<=3);
 

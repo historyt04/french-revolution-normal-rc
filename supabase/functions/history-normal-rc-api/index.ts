@@ -14,7 +14,8 @@ const pooledConnection=(value:string|null)=>{
  }catch{return value;}
 };
 // Edge/serverless traffic must use Supavisor transaction mode. A direct or
-// session-pooled connection lets every isolate reserve a database connection.
+// session-pooled connection lets every isolate reserve a database connection
+// and exhausts a small classroom project's connection budget during bursts.
 const connectionString=pooledConnection(Deno.env.get('HISTORY_RC_DB_POOL_URL')||Deno.env.get('SUPABASE_DB_URL'));
 const pepper=Deno.env.get('HISTORY_RC_LEGACY_PEPPER');
 const keyString=Deno.env.get('HISTORY_RC_BACKUP_KEY');

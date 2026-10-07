@@ -3,7 +3,7 @@ let filter25={type:'all',rarity:'all',event:'all'},replay25=null,fxContext25=nul
 const book25=()=>state42?.collection25;
 const entry25=(eventId,rarity)=>book25()?.entries.find(x=>x.eventId===eventId&&x.rarity===rarity);
 const variant25=(e,r,f)=>book25()?.variants.find(x=>x.eventId===e&&x.rarity===r&&x.effect===f);
-const effectName25=f=>book25()?.effectNames[f]||'일반';
+const effectName25=f=>book25()?.effectNames?.[f]||(f&&f!=='normal'?'효과 이름 확인 중':'일반');
 const allowedEffect25=(r,f)=>book25()?.effects?.[r]?.includes(f)||false;
 const visibleEffects25=(e,r)=>[...(book25()?.effects?.[r]||[]),...(entry25(e,r)?.effects||[])].filter((f,i,a)=>a.indexOf(f)===i);
 const acquired25=x=>!!(x?.normalSeen||x?.effects.length);

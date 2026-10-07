@@ -1,11 +1,21 @@
 {
-  "status": "teacher-verification-only",
-  "sourceRepository": "historyt04/french-revolution-normal-rc",
-  "sourceBranch": "rc-preview",
-  "release": "v4.7-rc-20260928",
-  "productionCommit": "8e1e26d973000a30e2d09212667c800347f273a7",
-  "apiFunction": "history-normal-rc-api",
-  "databaseSchema": "history_v5",
-  "preservedStudentEntry": "student-preview.html",
-  "studentTrialReady": false
+  "format": "french-revolution-classroom-rc-v1",
+  "release": "classroom-20261007",
+  "backend": "thwbtfkrbpxhefrtyavu",
+  "edgeFunction": "history-classroom-rc",
+  "classroomInitialDataOnly": true,
+  "maximumRecommendedClassroomSize": 30,
+  "strictPerformance50": "FAIL",
+  "functional50FinalPass": "NOT_PROVEN",
+  "canonicalProduct": {
+    "branch": "feature/v5c-atomic-completion-command",
+    "head": "2ea861793e3a3cc01758900078beecdad52212e6",
+    "workingTree": "13 tracked modified + 52 untracked; preserved"
+  },
+  "migration": {
+    "originalCount": 31,
+    "additional": "20261007071848_classroom_rc_enrollment_boundary"
+  },
+  "studentUrl": "https://historyt04.github.io/french-revolution-normal-rc/student-preview.html",
+  "teacherUrl": "https://historyt04.github.io/french-revolution-normal-rc/teacher.html"
 }

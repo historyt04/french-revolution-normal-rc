@@ -14,5 +14,5 @@ ranking=function(){
 queryRanks=function(e){e.preventDefault();const p=Object.fromEntries(new FormData(e.target));for(const key of ['schoolYear','grade','classNo','setCount','limit'])p[key]=p[key]?+p[key]:0;if(p.mode!=='matching')p.setCount=0;task(async()=>{ranks=await API.request('rankings.read',p);render()})};
 
 const renderTeacher47Base=render;
-render=function(){renderTeacher47Base();document.title='역사 학습 통합 플랫폼 v4.7';const version=document.querySelector('.topbar div:last-child small');if(version)version.textContent=version.textContent.replace('v4.6','v4.7');const loginVersion=document.querySelector('.login .muted');if(loginVersion)loginVersion.textContent=loginVersion.textContent.replace('v4.6','v4.7')};
+render=function(){renderTeacher47Base();document.title='역사 학습 통합 플랫폼 v4.9 RC';const version=document.querySelector('.topbar div:last-child small');if(version)version.textContent=version.textContent.replace('v4.6','v4.9 RC');const loginVersion=document.querySelector('.login .muted');if(loginVersion)loginVersion.textContent=loginVersion.textContent.replace('v4.6','v4.9 RC')};
 render();

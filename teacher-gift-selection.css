@@ -1,0 +1,7 @@
+.gift-target-selection { margin: 18px 0; padding: 14px; border: 1px solid #acb8c8; border-radius: 8px; }
+.gift-roster-scroll { max-height: 58vh; overflow-y: auto; }
+.gift-roster-scroll details { margin: 12px 0; border-bottom: 1px solid #acb8c8; padding-bottom: 10px; }
+.gift-roster-scroll summary { cursor: pointer; padding: 10px 0; }
+.gift-student-choice { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 8px; cursor: pointer; }
+.gift-student-choice input[type=checkbox] { width: 24px; height: 24px; flex-shrink: 0; }
+.gift-student-choice small { display: block; margin-top: 4px; }

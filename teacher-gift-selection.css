@@ -5,3 +5,9 @@
 .gift-student-choice { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 8px; cursor: pointer; }
 .gift-student-choice input[type=checkbox] { width: 24px; height: 24px; flex-shrink: 0; }
 .gift-student-choice small { display: block; margin-top: 4px; }
+.gift-recovery-request { margin-top: 18px; padding: 12px; border: 1px solid #acb8c8; border-radius: 8px; }
+.gift-recovery-request details { margin: 12px 0; }
+.gift-recovery-request summary { padding: 10px 0; cursor: pointer; }
+.gift-recovery-request ul { max-height: 45vh; overflow: auto; padding-left: 20px; }
+.gift-recovery-request li { padding: 8px 0; }
+.gift-recovery-request li small { display: block; overflow-wrap: anywhere; }
